@@ -61,7 +61,12 @@ void Server::init__and_run()
         }
         for (size_t i = 0; i < _fds.size(); i++) {
             if (_fds[i].revents & POLLIN) {
-                std::cout << _fds[i].fd << '\n';
+                char buff[1024];
+                if (_fds[i].fd == _server_sock) {
+                    
+                } else {
+
+                }
             }
         }
         // else {
