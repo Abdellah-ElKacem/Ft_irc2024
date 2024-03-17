@@ -25,7 +25,7 @@ class Server
         void init__and_run();
     private :
         std::vector<pollfd> _fds;
-        struct sockaddr_in __serv_addr;
+        struct sockaddr_in __serv_addr, __clients;
         int _server_sock;
         int _port;
         std::string _password;

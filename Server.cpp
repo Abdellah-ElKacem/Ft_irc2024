@@ -55,28 +55,49 @@ void Server::init__and_run()
 	_fds.push_back(add_to_poll(_server_sock));
 
     // non non blocking
-    while(1) {
-        int status = poll(_fds.data(),_fds.size(), 4000);
-        if (status == 0) {
-            continue;
-        }
-        for (size_t i = 0; i < _fds.size(); ++i) {
+    while(1)
+    {
+        // std::cout << "waiting for polling..." << '\n';
+        int status = poll(_fds.data(),_fds.size(), -1);
+        // std::cout << _fds.size() << '\n';
+        if (status == -1) {
+            std::perror("poll");
+            break;
+        } for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
                 char buff[1024];
+                // char buff1[1024];
                 std::memset(buff, 0, sizeof(buff));
+                // std::memset(buff1, 0, sizeof(buff1));
                 if (_fds[i].fd == _server_sock) {
-                    // socklen_t addrlen = sizeof(sockaddr);
-                    int client_fd = accept(_server_sock,NULL,NULL);
-                    if (client_fd >= 0) {
-	                    _fds.push_back(add_to_poll(client_fd));
-                        std::cout << "client connected\n";
+                    socklen_t addrlen = sizeof(struct sockaddr);
+                    int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
+                    if (client_fd == -1) {
+                        std::perror("Accept");
+                        continue;
                     }
+	                _fds.push_back(add_to_poll(client_fd));
+                    std::cout << "client connected\n";
                 } else {
-                    size_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    // std::cout << "waiting for receveing..." << '\n';
+                    ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    if (recvv == -1) {
+                        std::cout << "failed recv\n";
+                    }
+                    if (recvv == 0) {
+                        std::cout << "client disconnected\n";
+                        close(_fds[i].fd);
+                        _fds.erase(_fds.begin() + i);
+                    }
+                    
                     if (recvv)
                         std::cout << "the client {" << _fds[i].fd << "} said : " << buff;
                 }
             }
+            if (_fds[i].revents & POLLERR) {
+                std::cout<< "error:" << _fds[i].fd << '\n';
+            }
         }
     }
+    // close fds
 }
