@@ -47,42 +47,36 @@ void Server::init__and_run()
         std::perror("Error Bind");
         exit(EXIT_FAILURE);
     }
-	_fds.push_back(add_to_poll(_server_sock));
     if (listen(_server_sock,NUM_OF_CONNECTIONS) == -1) {
         std::perror("Error Listen");
         exit(EXIT_FAILURE);
     }
+
+	_fds.push_back(add_to_poll(_server_sock));
+
+    // non non blocking
     while(1) {
-        std::cout << "client connected\n";
         int status = poll(_fds.data(),_fds.size(), 4000);
         if (status == 0) {
-            // std::cerr << "poll time out \n";
             continue;
         }
-        for (size_t i = 0; i < _fds.size(); i++) {
+        for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
                 char buff[1024];
+                std::memset(buff, 0, sizeof(buff));
                 if (_fds[i].fd == _server_sock) {
-                    
+                    // socklen_t addrlen = sizeof(sockaddr);
+                    int client_fd = accept(_server_sock,NULL,NULL);
+                    if (client_fd >= 0) {
+	                    _fds.push_back(add_to_poll(client_fd));
+                        std::cout << "client connected\n";
+                    }
                 } else {
-
+                    size_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    if (recvv)
+                        std::cout << "the client {" << _fds[i].fd << "} said : " << buff;
                 }
             }
         }
-        // else {
-        //     for (size_t i = _fds[0].revents & POLLIN; i < _fds.size(); i++) {
-        //         if (i) {
-        //             std::cout << "word is : " << _fds[0].fd << '\n';
-        //         } else {
-        //             std::cout << "ocuup : " << _fds[0].revents << '\n';
-        //         }
-            
-        // }
-        // std::cout << status ;
     }
-    // // std::cout << "Ready for client connect().\n";
-    // int ac = accept(_server_sock,NULL,NULL);
-    // if (ac == -1) {
-    //     std::perror("Error Accept");
-    // }
 }
