@@ -10,6 +10,9 @@
 #include <cstring>
 #include <unistd.h>
 #include <vector>
+#include <map>
+
+#include "Clients.hpp"
 
 #define NUM_OF_CONNECTIONS 10
 
@@ -29,4 +32,9 @@ class Server
         int _server_sock;
         int _port;
         std::string _password;
+        int accept_func();
+        void identify(int fd_client);
 };
+
+
+extern std::map<std::string, Clients>map_of_clients;

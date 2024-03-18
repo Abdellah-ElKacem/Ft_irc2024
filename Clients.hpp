@@ -2,19 +2,12 @@
 
 #include "Server.hpp"
 
-// class Clients
-// {
-// private:
-//     /* data */
-// public:
-//     Clients(/* args */);
-//     ~Clients();
-// };
-
-// Clients::Clients(/* args */)
-// {
-// }
-
-// Clients::~Clients()
-// {
-// }
+class Clients
+{
+    private:
+        std::string _nick_name;
+        std::string _user_name;
+    public:
+        Clients(/* args */){}
+        ~Clients(){}
+};

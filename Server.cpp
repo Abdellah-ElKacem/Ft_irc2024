@@ -32,6 +32,27 @@ std::string Server::getPassword() const {
     return _password;
 }
 
+void Server::identify(int fd_client) {
+    std::string message;
+    message = "       _Welcome to the Server_\n\r";
+    send(fd_client, message.c_str() , message.size(), 0);
+    message = "        `      ::Enter::\n<Password> - <Nick_name> - <Username>\n\r";
+    send(fd_client, message.c_str() , message.size(), 0);
+}
+
+int Server::accept_func() {
+    socklen_t addrlen = sizeof(struct sockaddr);
+    int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
+    if (client_fd == -1) {
+        std::perror("Accept");
+        return 1;
+    }
+    identify(client_fd);
+	_fds.push_back(add_to_poll(client_fd));
+    std::cout << "client connected\n";
+    return 0;
+}
+
 void Server::init__and_run()
 {
     if ((_server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -57,29 +78,18 @@ void Server::init__and_run()
     // non non blocking
     while(1)
     {
-        // std::cout << "waiting for polling..." << '\n';
         int status = poll(_fds.data(),_fds.size(), -1);
-        // std::cout << _fds.size() << '\n';
         if (status == -1) {
             std::perror("poll");
             break;
         } for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
                 char buff[1024];
-                // char buff1[1024];
                 std::memset(buff, 0, sizeof(buff));
-                // std::memset(buff1, 0, sizeof(buff1));
                 if (_fds[i].fd == _server_sock) {
-                    socklen_t addrlen = sizeof(struct sockaddr);
-                    int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
-                    if (client_fd == -1) {
-                        std::perror("Accept");
+                    if (accept_func())
                         continue;
-                    }
-	                _fds.push_back(add_to_poll(client_fd));
-                    std::cout << "client connected\n";
                 } else {
-                    // std::cout << "waiting for receveing..." << '\n';
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
                     if (recvv == -1) {
                         std::cout << "failed recv\n";
@@ -99,5 +109,9 @@ void Server::init__and_run()
             }
         }
     }
-    // close fds
+    for (size_t i = 0; i < _fds.size(); i++)
+    {
+        close(_fds[i].fd);
+        _fds.erase(_fds.begin() + i);
+    }
 }
