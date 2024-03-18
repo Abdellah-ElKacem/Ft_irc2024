@@ -2,7 +2,7 @@ NAME = ircserv
 
 HEADER = Server.hpp Clients.hpp
 
-SRC = main.cpp Server.cpp #Clients.cpp
+SRC = main.cpp Server.cpp Clients.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

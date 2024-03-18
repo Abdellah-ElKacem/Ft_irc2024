@@ -10,6 +10,7 @@ Server::Server(const std::string port, const std::string password) : _password(p
         }
     }
     _port = std::atol(port.c_str());
+    _the_port = port;
     __serv_addr.sin_family = AF_INET;
     __serv_addr.sin_port = htons(_port);
     __serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -36,7 +37,7 @@ void Server::identify(int fd_client) {
     std::string message;
     message = "       _Welcome to the Server_\n\r";
     send(fd_client, message.c_str() , message.size(), 0);
-    message = "        `      ::Enter::\n<Password> - <Nick_name> - <Username>\n\r";
+    message = "           <~ ::Enter:: ~>\n<Password> - <Nick_name> - <Username>\n\r";
     send(fd_client, message.c_str() , message.size(), 0);
 }
 
@@ -49,6 +50,8 @@ int Server::accept_func() {
     }
     identify(client_fd);
 	_fds.push_back(add_to_poll(client_fd));
+    Clients client(client_fd);
+    map_of_clients[client.GetNickname()] = client;
     std::cout << "client connected\n";
     return 0;
 }

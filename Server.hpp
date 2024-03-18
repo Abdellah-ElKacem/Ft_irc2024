@@ -32,6 +32,7 @@ class Server
         int _server_sock;
         int _port;
         std::string _password;
+        std::string _the_port;
         int accept_func();
         void identify(int fd_client);
 };
