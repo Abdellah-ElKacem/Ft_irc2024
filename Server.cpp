@@ -1,5 +1,7 @@
 #include "Server.hpp"
-// static struct sockaddr_in __serv_addr;
+
+std::map<std::string, Clients>map_of_clients;
+
 Server::Server(const std::string port, const std::string password) : _password(password)
 {
     std::memset(&__serv_addr, 0, sizeof(__serv_addr));
@@ -41,7 +43,8 @@ void Server::identify(int fd_client) {
     send(fd_client, message.c_str() , message.size(), 0);
 }
 
-int Server::accept_func() {
+int Server::accept_func()
+{
     socklen_t addrlen = sizeof(struct sockaddr);
     int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
     if (client_fd == -1) {
@@ -77,6 +80,7 @@ void Server::init__and_run()
     }
 
 	_fds.push_back(add_to_poll(_server_sock));
+    std::map<std::string, Clients>::iterator it;
 
     // non non blocking
     while(1)
@@ -102,9 +106,18 @@ void Server::init__and_run()
                         close(_fds[i].fd);
                         _fds.erase(_fds.begin() + i);
                     }
-                    
-                    if (recvv)
-                        std::cout << "the client {" << _fds[i].fd << "} said : " << buff;
+                    // if (_buffer.back() == '\n')
+                    // std::cout << "hello" << std::endl;
+                        _buffer.clear();
+                    _buffer.append(buff);
+                    if (recvv) //{
+                    //     for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+                    //         if (it->second.GetFdClient() == _fds[i].fd)
+                    //             ;
+                    //     } 
+                    // }
+                    _buffer.pop_back();
+                        std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
                 }
             }
             if (_fds[i].revents & POLLERR) {

@@ -14,6 +14,8 @@
 
 #include "Clients.hpp"
 
+class Clients;
+
 #define NUM_OF_CONNECTIONS 10
 
 class Server
@@ -33,6 +35,7 @@ class Server
         int _port;
         std::string _password;
         std::string _the_port;
+        std::string _buffer;
         int accept_func();
         void identify(int fd_client);
 };

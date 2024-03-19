@@ -3,7 +3,7 @@
 Clients::Clients(int fd) {
     _nick_name = "";
     _user_name = "";
-    pass_in_client = 0;
+    // pass_in_client = 0;
     fd_of_client = fd;
 
     __Password_ = false;
@@ -18,4 +18,8 @@ std::string Clients::GetNickname() const {
 
 std::string Clients::GetUsername() const {
     return _user_name;
+}
+
+int Clients::GetFdClient() const {
+    return fd_of_client;
 }

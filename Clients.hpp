@@ -6,7 +6,7 @@ class Clients
 {
     private:
         int fd_of_client;
-        int pass_in_client;
+        // int pass_in_client;
         std::string _nick_name;
         std::string _user_name;
 
@@ -21,6 +21,7 @@ class Clients
         ~Clients(){}
         std::string GetNickname() const;
         std::string GetUsername() const;
+        int GetFdClient() const;
 
         void setNickname(std::string nick);
         void setUsername(std::string user);
