@@ -23,3 +23,47 @@ std::string Clients::GetUsername() const {
 int Clients::GetFdClient() const {
     return fd_of_client;
 }
+
+void Clients::setNickname(std::string nick) {
+    _nick_name = nick;
+}
+
+void Clients::setUsername(std::string user) {
+    _user_name = user;
+}
+
+void Clients::SetBoolPassword(bool val) {
+    __Password_ = val;
+}
+
+void Clients::SetBoolNickname(bool val) {
+    __NickName_ = val;
+}
+
+void Clients::SetBoolUsername(bool val) {
+    __UserName_ = val;
+}
+
+void Clients::SetBoolIdentify(bool val) {
+    __identify_ = val;
+}
+
+bool Clients::GetBoolPassword() const
+{
+    return __Password_;
+}
+
+bool Clients::GetBoolNickname() const
+{
+    return __NickName_;
+}
+
+bool Clients::GetBoolUsername() const
+{
+    return __UserName_;
+}
+
+bool Clients::GetBoolIdentify() const
+{
+    return __identify_;
+}

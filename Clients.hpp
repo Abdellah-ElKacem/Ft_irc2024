@@ -16,7 +16,7 @@ class Clients
         bool __identify_;
 
     public:
-        Clients(){}
+        Clients(){};
         Clients(int fd);
         ~Clients(){}
         std::string GetNickname() const;
@@ -26,9 +26,13 @@ class Clients
         void setNickname(std::string nick);
         void setUsername(std::string user);
 
+        void SetBoolPassword(bool);
+        void SetBoolNickname(bool);
+        void SetBoolUsername(bool);
+        void SetBoolIdentify(bool);
+
         bool GetBoolPassword() const;
         bool GetBoolNickname() const;
         bool GetBoolUsername() const;
         bool GetBoolIdentify() const;
-
 };

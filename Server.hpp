@@ -37,7 +37,10 @@ class Server
         std::string _the_port;
         std::string _buffer;
         int accept_func();
-        void identify(int fd_client);
+        void welcome_client(int fd_client);
+        void msg_client(int fd_client, std::string);
+        void authenticate_client(Clients&);
+        void register_client(Clients&);
 };
 
 

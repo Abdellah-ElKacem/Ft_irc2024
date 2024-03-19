@@ -2,7 +2,7 @@
 
 std::map<std::string, Clients>map_of_clients;
 
-Server::Server(const std::string port, const std::string password) : _password(password)
+Server::Server(const std::string port, const std::string password)
 {
     std::memset(&__serv_addr, 0, sizeof(__serv_addr));
     for (size_t i = 0; i < port.size(); i++) {
@@ -13,6 +13,7 @@ Server::Server(const std::string port, const std::string password) : _password(p
     }
     _port = std::atol(port.c_str());
     _the_port = port;
+    _password = password;
     __serv_addr.sin_family = AF_INET;
     __serv_addr.sin_port = htons(_port);
     __serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -35,12 +36,62 @@ std::string Server::getPassword() const {
     return _password;
 }
 
-void Server::identify(int fd_client) {
+void Server::register_client(Clients& client) {
+
+    // std::cout << "[" << _buffer << "]-\n";
+
+    std::string part1, part2;
+
+    part1 = _buffer.substr(0,_buffer.find(" "));
+    for (size_t i = 0; i < part1.size(); i++) {
+        part1[i] = std::toupper(part1.c_str()[i]);
+    } if (part1 != "PASS" && part1 != "NICK" && part1 != "USER") {
+        msg_client(client.GetFdClient(),"invalid Command\n");
+        return;
+    }
+    // std::cout << std::boolalpha << client.GetBoolPassword() << '\n';
+    if ( client.GetBoolPassword() == false) {
+        if(part1 != "PASS") {
+            msg_client(client.GetFdClient(),"Set the Password first\n");
+            return;
+        }
+        if (_buffer.find(" ") != _buffer.npos)
+            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        else
+            part2 = "";
+        if (part2.empty()) {
+            msg_client(client.GetFdClient(),"Write the Password\n");
+            return;
+        } if (part2 != _password) {
+            msg_client(client.GetFdClient(),"Wrong password, Try again...\n");
+            return;
+        }
+        client.SetBoolPassword(true);
+    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == false ) {
+
+    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == false ) {
+
+    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true ) {
+
+    }
+}
+
+void Server::msg_client(int fd_client, std::string message) {
+    send(fd_client, message.c_str() , message.size(), 0);
+}
+
+void Server::welcome_client(int fd_client) {
     std::string message;
     message = "       _Welcome to the Server_\n\r";
     send(fd_client, message.c_str() , message.size(), 0);
     message = "           <~ ::Enter:: ~>\n<Password> - <Nick_name> - <Username>\n\r";
     send(fd_client, message.c_str() , message.size(), 0);
+}
+
+void Server::authenticate_client(Clients& client) {
+    if (client.GetBoolIdentify() == false)
+        register_client(client);
+
 }
 
 int Server::accept_func()
@@ -51,7 +102,7 @@ int Server::accept_func()
         std::perror("Accept");
         return 1;
     }
-    identify(client_fd);
+    welcome_client(client_fd);
 	_fds.push_back(add_to_poll(client_fd));
     Clients client(client_fd);
     map_of_clients[client.GetNickname()] = client;
@@ -80,6 +131,7 @@ void Server::init__and_run()
     }
 
 	_fds.push_back(add_to_poll(_server_sock));
+
     std::map<std::string, Clients>::iterator it;
 
     // non non blocking
@@ -106,18 +158,20 @@ void Server::init__and_run()
                         close(_fds[i].fd);
                         _fds.erase(_fds.begin() + i);
                     }
-                    // if (_buffer.back() == '\n')
-                    // std::cout << "hello" << std::endl;
-                        _buffer.clear();
+                    _buffer.clear();
                     _buffer.append(buff);
-                    if (recvv) //{
-                    //     for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                    //         if (it->second.GetFdClient() == _fds[i].fd)
-                    //             ;
-                    //     } 
-                    // }
-                    _buffer.pop_back();
-                        std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
+                    if (_buffer.back()-- == '\r') {
+                        _buffer.pop_back();
+                        _buffer.pop_back();
+                    } else
+                        _buffer.pop_back();
+                    if (recvv) {
+                        for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+                            if (it->second.GetFdClient() == _fds[i].fd)
+                                authenticate_client(it->second);
+                        }
+                    }
+                        // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
                 }
             }
             if (_fds[i].revents & POLLERR) {
