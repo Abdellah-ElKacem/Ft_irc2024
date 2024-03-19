@@ -67,13 +67,51 @@ void Server::register_client(Clients& client) {
             return;
         }
         client.SetBoolPassword(true);
+        if (part2.empty()) {
+            msg_client(client.GetFdClient(),"Write the Password\n");
+            return;
+        } if (part2 != _password) {
+            msg_client(client.GetFdClient(),"Wrong password, Try again...\n");
+            return;
+        }
+        client.SetBoolPassword(true);
+        return;
     } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == false ) {
-
+        if(part1 != "NICK") {
+            msg_client(client.GetFdClient(),"Set NickName second\n");
+            return;
+        }
+        if (_buffer.find(" ") != _buffer.npos)
+            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        else
+            part2 = "";
+        if (part2.empty()) {
+            msg_client(client.GetFdClient(),"Write the Nickname\n");
+            return;
+        }
+        client.setNickname(part2);
+        client.SetBoolNickname(true);
+        return;
     } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == false ) {
-
-    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true ) {
-
-    }
+        if(part1 != "USER") {
+            msg_client(client.GetFdClient(),"Set UserName third\n");
+            return;
+        }
+        if (_buffer.find(" ") != _buffer.npos)
+            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        else
+            part2 = "";
+        if (part2.empty()) {
+            msg_client(client.GetFdClient(),"Write the Username\n");
+            return;
+        }
+        client.setUsername(part2);
+        client.SetBoolUsername(true);
+        std::cout << "OK!...\n";
+        msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
+        return;
+    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true )
+        client.SetBoolIdentify(true);
 }
 
 void Server::msg_client(int fd_client, std::string message) {
@@ -91,7 +129,9 @@ void Server::welcome_client(int fd_client) {
 void Server::authenticate_client(Clients& client) {
     if (client.GetBoolIdentify() == false)
         register_client(client);
+    else {
 
+    }
 }
 
 int Server::accept_func()
@@ -150,6 +190,8 @@ void Server::init__and_run()
                         continue;
                 } else {
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    _buffer.clear();
+                    _buffer.append(buff);
                     if (recvv == -1) {
                         std::cout << "failed recv\n";
                     }
@@ -157,9 +199,8 @@ void Server::init__and_run()
                         std::cout << "client disconnected\n";
                         close(_fds[i].fd);
                         _fds.erase(_fds.begin() + i);
+                        continue;
                     }
-                    _buffer.clear();
-                    _buffer.append(buff);
                     if (_buffer.back()-- == '\r') {
                         _buffer.pop_back();
                         _buffer.pop_back();
