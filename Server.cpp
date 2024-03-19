@@ -49,7 +49,7 @@ void Server::register_client(Clients& client) {
         msg_client(client.GetFdClient(),"invalid Command\n");
         return;
     }
-    // std::cout << std::boolalpha << client.GetBoolPassword() << '\n';
+    // std::cout << std::boolalpha << client.GetBoolIdentify() << '\n';
     if ( client.GetBoolPassword() == false) {
         if(part1 != "PASS") {
             msg_client(client.GetFdClient(),"Set the Password first\n");
@@ -109,9 +109,9 @@ void Server::register_client(Clients& client) {
         client.SetBoolUsername(true);
         std::cout << "OK!...\n";
         msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
-        return;
-    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true )
         client.SetBoolIdentify(true);
+    }
+    // if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true )
 }
 
 void Server::msg_client(int fd_client, std::string message) {
@@ -127,11 +127,9 @@ void Server::welcome_client(int fd_client) {
 }
 
 void Server::authenticate_client(Clients& client) {
-    if (client.GetBoolIdentify() == false)
+    // std::cout << std::boolalpha << client.GetBoolIdentify() << '\n';
+    // if (!client.GetBoolIdentify())
         register_client(client);
-    else {
-
-    }
 }
 
 int Server::accept_func()
@@ -149,6 +147,36 @@ int Server::accept_func()
     std::cout << "client connected\n";
     return 0;
 }
+
+// int Server::the_commands(char *buff, int i)
+// {
+//     std::map<std::string, Clients>::iterator it;
+//     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+//     _buffer.clear();
+//     _buffer.append(buff);
+//     if (recvv == -1) {
+//         std::cout << "failed recv\n";
+//     }
+//     if (recvv == 0) {
+//         std::cout << "client disconnected\n";
+//         close(_fds[i].fd);
+//         _fds.erase(_fds.begin() + i);
+//         return 1;
+//     }
+//     if (_buffer.back()-- == '\r') {
+//         _buffer.pop_back();
+//         _buffer.pop_back();
+//     } else
+//         _buffer.pop_back();
+//     if (recvv) {
+//         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+//             if (it->second.GetFdClient() == _fds[i].fd)
+//                 authenticate_client(it->second);
+//         }
+//     }
+//         // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
+//     return 0;
+// }
 
 void Server::init__and_run()
 {
@@ -189,7 +217,11 @@ void Server::init__and_run()
                     if (accept_func())
                         continue;
                 } else {
+                    // if (the_commands(buff, i))
+                    //     continue;
+                    // std::cout <<"fd is : "<< _fds[i].fd << '\n';
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    // std::cout <<"~~~~~~~~~~~~~~~~~~~~~~~"<< '\n';
                     _buffer.clear();
                     _buffer.append(buff);
                     if (recvv == -1) {
@@ -201,18 +233,19 @@ void Server::init__and_run()
                         _fds.erase(_fds.begin() + i);
                         continue;
                     }
-                    if (_buffer.back()-- == '\r') {
+                    if (_buffer.back()-- == '\r')
                         _buffer.pop_back();
-                        _buffer.pop_back();
-                    } else
-                        _buffer.pop_back();
+                    _buffer.pop_back();
                     if (recvv) {
                         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                            if (it->second.GetFdClient() == _fds[i].fd)
-                                authenticate_client(it->second);
+                            if (it->second.GetFdClient() == _fds[i].fd) {
+                                if (it->second.GetBoolIdentify() == false)
+                                    authenticate_client(it->second);
+                                else
+                                    std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
+                            }
                         }
                     }
-                        // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
                 }
             }
             if (_fds[i].revents & POLLERR) {
