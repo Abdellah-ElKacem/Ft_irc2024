@@ -9,6 +9,7 @@ class Clients
         // int pass_in_client;
         std::string _nick_name;
         std::string _user_name;
+        std::string _buffer_cl;
 
         bool __Password_;
         bool __NickName_;
@@ -25,6 +26,7 @@ class Clients
 
         void setNickname(std::string nick);
         void setUsername(std::string user);
+        void SetBuffer(std::string buff);
 
         void SetBoolPassword(bool);
         void SetBoolNickname(bool);
@@ -35,4 +37,6 @@ class Clients
         bool GetBoolNickname() const;
         bool GetBoolUsername() const;
         bool GetBoolIdentify() const;
+
+        std::string GetBuffer() const;
 };

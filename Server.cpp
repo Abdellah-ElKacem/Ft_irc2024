@@ -42,7 +42,7 @@ void Server::register_client(Clients& client) {
 
     std::string part1, part2;
 
-    part1 = _buffer.substr(0,_buffer.find(" "));
+    part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     for (size_t i = 0; i < part1.size(); i++) {
         part1[i] = std::toupper(part1.c_str()[i]);
     } if (part1 != "PASS" && part1 != "NICK" && part1 != "USER") {
@@ -55,8 +55,8 @@ void Server::register_client(Clients& client) {
             msg_client(client.GetFdClient(),"Set the Password first\n");
             return;
         }
-        if (_buffer.find(" ") != _buffer.npos)
-            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
         else
             part2 = "";
         if (part2.empty()) {
@@ -81,8 +81,8 @@ void Server::register_client(Clients& client) {
             msg_client(client.GetFdClient(),"Set NickName second\n");
             return;
         }
-        if (_buffer.find(" ") != _buffer.npos)
-            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
         else
             part2 = "";
         if (part2.empty()) {
@@ -97,8 +97,8 @@ void Server::register_client(Clients& client) {
             msg_client(client.GetFdClient(),"Set UserName third\n");
             return;
         }
-        if (_buffer.find(" ") != _buffer.npos)
-            part2 = _buffer.substr(_buffer.find(" ") + 1);
+        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
         else
             part2 = "";
         if (part2.empty()) {
@@ -115,7 +115,9 @@ void Server::register_client(Clients& client) {
 }
 
 void Server::msg_client(int fd_client, std::string message) {
-    send(fd_client, message.c_str() , message.size(), 0);
+    std::cout << "->" <<fd_client << '\n';
+    if (send(fd_client, message.c_str() , message.size(), 0) == -1)
+        std::cerr << "sa\n";
 }
 
 void Server::welcome_client(int fd_client) {
@@ -211,15 +213,15 @@ void Server::init__and_run()
             break;
         } for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
-                char buff[1024];
-                std::memset(buff, 0, sizeof(buff));
+                // std::memset(buff, 0, sizeof(buff));
                 if (_fds[i].fd == _server_sock) {
                     if (accept_func())
                         continue;
                 } else {
                     // if (the_commands(buff, i))
                     //     continue;
-                    // std::cout <<"fd is : "<< _fds[i].fd << '\n';
+                    std::cout <<"fd is : "<< _fds[i].fd << '\n';
+                char buff[1024];
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
                     // std::cout <<"~~~~~~~~~~~~~~~~~~~~~~~"<< '\n';
                     _buffer.clear();
@@ -239,6 +241,7 @@ void Server::init__and_run()
                     if (recvv) {
                         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
                             if (it->second.GetFdClient() == _fds[i].fd) {
+                                it->second.SetBuffer(_buffer);
                                 if (it->second.GetBoolIdentify() == false)
                                     authenticate_client(it->second);
                                 else

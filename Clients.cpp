@@ -32,6 +32,12 @@ void Clients::setUsername(std::string user) {
     _user_name = user;
 }
 
+void Clients::SetBuffer(std::string buff)
+{
+    _buffer_cl.clear();
+    _buffer_cl.append(buff);
+}
+
 void Clients::SetBoolPassword(bool val) {
     __Password_ = val;
 }
@@ -66,4 +72,9 @@ bool Clients::GetBoolUsername() const
 bool Clients::GetBoolIdentify() const
 {
     return __identify_;
+}
+
+std::string Clients::GetBuffer() const
+{
+    return _buffer_cl;
 }
