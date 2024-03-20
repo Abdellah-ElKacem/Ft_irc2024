@@ -41,5 +41,5 @@ class Clients
         bool GetBoolUsername() const;
         bool GetBoolIdentify() const;
         bool GetBoolNewline() const;
-
+ 
 };
