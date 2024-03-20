@@ -45,4 +45,4 @@ class Server
 };
 
 
-extern std::map<std::string, Clients>map_of_clients;
+extern std::map<int, Clients>map_of_clients;

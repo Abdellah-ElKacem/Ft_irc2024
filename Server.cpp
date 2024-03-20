@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-std::map<std::string, Clients>map_of_clients;
+std::map<int, Clients>map_of_clients;
 
 Server::Server(const std::string port, const std::string password)
 {
@@ -37,8 +37,6 @@ std::string Server::getPassword() const {
 }
 
 void Server::register_client(Clients& client) {
-
-    // std::cout << "[" << _buffer << "]-\n";
 
     std::string part1, part2;
 
@@ -111,11 +109,9 @@ void Server::register_client(Clients& client) {
         msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
         client.SetBoolIdentify(true);
     }
-    // if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true )
 }
 
 void Server::msg_client(int fd_client, std::string message) {
-    std::cout << "->" <<fd_client << '\n';
     if (send(fd_client, message.c_str() , message.size(), 0) == -1)
         std::cerr << "sa\n";
 }
@@ -129,8 +125,6 @@ void Server::welcome_client(int fd_client) {
 }
 
 void Server::authenticate_client(Clients& client) {
-    // std::cout << std::boolalpha << client.GetBoolIdentify() << '\n';
-    // if (!client.GetBoolIdentify())
         register_client(client);
 }
 
@@ -145,40 +139,11 @@ int Server::accept_func()
     welcome_client(client_fd);
 	_fds.push_back(add_to_poll(client_fd));
     Clients client(client_fd);
-    map_of_clients[client.GetNickname()] = client;
+    map_of_clients[client.GetFdClient()] = client;
     std::cout << "client connected\n";
     return 0;
 }
 
-// int Server::the_commands(char *buff, int i)
-// {
-//     std::map<std::string, Clients>::iterator it;
-//     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
-//     _buffer.clear();
-//     _buffer.append(buff);
-//     if (recvv == -1) {
-//         std::cout << "failed recv\n";
-//     }
-//     if (recvv == 0) {
-//         std::cout << "client disconnected\n";
-//         close(_fds[i].fd);
-//         _fds.erase(_fds.begin() + i);
-//         return 1;
-//     }
-//     if (_buffer.back()-- == '\r') {
-//         _buffer.pop_back();
-//         _buffer.pop_back();
-//     } else
-//         _buffer.pop_back();
-//     if (recvv) {
-//         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-//             if (it->second.GetFdClient() == _fds[i].fd)
-//                 authenticate_client(it->second);
-//         }
-//     }
-//         // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
-//     return 0;
-// }
 
 void Server::init__and_run()
 {
@@ -202,7 +167,7 @@ void Server::init__and_run()
 
 	_fds.push_back(add_to_poll(_server_sock));
 
-    std::map<std::string, Clients>::iterator it;
+    std::map<int, Clients>::iterator it;
 
     // non non blocking
     while(1)
@@ -213,15 +178,12 @@ void Server::init__and_run()
             break;
         } for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
-                // std::memset(buff, 0, sizeof(buff));
                 if (_fds[i].fd == _server_sock) {
                     if (accept_func())
                         continue;
                 } else {
-                    // if (the_commands(buff, i))
-                    //     continue;
-                    std::cout <<"fd is : "<< _fds[i].fd << '\n';
-                char buff[1024];
+                    char buff[1024];
+                    std::memset(buff, 0, sizeof(buff));
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
                     // std::cout <<"~~~~~~~~~~~~~~~~~~~~~~~"<< '\n';
                     _buffer.clear();
@@ -262,3 +224,45 @@ void Server::init__and_run()
         _fds.erase(_fds.begin() + i);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// int Server::the_commands(char *buff, int i)
+// {
+//     std::map<std::string, Clients>::iterator it;
+//     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+//     _buffer.clear();
+//     _buffer.append(buff);
+//     if (recvv == -1) {
+//         std::cout << "failed recv\n";
+//     }
+//     if (recvv == 0) {
+//         std::cout << "client disconnected\n";
+//         close(_fds[i].fd);
+//         _fds.erase(_fds.begin() + i);
+//         return 1;
+//     }
+//     if (_buffer.back()-- == '\r') {
+//         _buffer.pop_back();
+//         _buffer.pop_back();
+//     } else
+//         _buffer.pop_back();
+//     if (recvv) {
+//         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+//             if (it->second.GetFdClient() == _fds[i].fd)
+//                 authenticate_client(it->second);
+//         }
+//     }
+//         // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
+//     return 0;
+// }
