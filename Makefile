@@ -1,8 +1,8 @@
 NAME = ircserv
 
-HEADER = Server.hpp Clients.hpp
+HEADER = Server.hpp Clients.hpp channel.hpp
 
-SRC = main.cpp Server.cpp Clients.cpp
+SRC = main.cpp Server.cpp Clients.cpp channel.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

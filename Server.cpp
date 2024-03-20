@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "channel.hpp"
 
 std::map<int, Clients>map_of_clients;
 
@@ -211,7 +212,7 @@ void Server::init__and_run()
                                 if (it->second.GetBoolIdentify() == false)
                                     authenticate_client(it->second);
                                 else
-                                    std::cout << "the client {" << _fds[i].fd << "} said : " << it->second.GetBuffer() << std::endl;
+                                    check_cmd(it);
                             }
                         }
                     }
