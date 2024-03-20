@@ -185,7 +185,6 @@ void Server::init__and_run()
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
-                    // std::cout <<"~~~~~~~~~~~~~~~~~~~~~~~"<< '\n';
                     _buffer.clear();
                     _buffer.append(buff);
                     if (recvv == -1) {
@@ -197,17 +196,22 @@ void Server::init__and_run()
                         _fds.erase(_fds.begin() + i);
                         continue;
                     }
-                    if (_buffer.back()-- == '\r')
+                    // std::cout << _buffer << _buffer.size() << " - [" << _buffer.back()<<  "]\n";
+                    if (_buffer.back() == '\n') {
                         _buffer.pop_back();
-                    _buffer.pop_back();
+                        map_of_clients[_fds[i].fd].SetBoolNewline(true);
+                    } if (_buffer.back() == '\r')
+                        _buffer.pop_back();
+                    // std::cout << _buffer << _buffer.size() << '\n';
                     if (recvv) {
                         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
                             if (it->second.GetFdClient() == _fds[i].fd) {
                                 it->second.SetBuffer(_buffer);
+                                // std::cout << std::boolalpha << it->second.GetBoolNewline() << '\n';
                                 if (it->second.GetBoolIdentify() == false)
                                     authenticate_client(it->second);
                                 else
-                                    std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
+                                    std::cout << "the client {" << _fds[i].fd << "} said : " << it->second.GetBuffer() << std::endl;
                             }
                         }
                     }

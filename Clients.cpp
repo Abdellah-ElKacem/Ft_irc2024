@@ -10,6 +10,7 @@ Clients::Clients(int fd) {
     __NickName_ = false;
     __UserName_ = false;
     __identify_ = false;
+    __newline_ = false;
 }
 
 std::string Clients::GetNickname() const {
@@ -34,7 +35,12 @@ void Clients::setUsername(std::string user) {
 
 void Clients::SetBuffer(std::string buff)
 {
-    _buffer_cl.clear();
+    if (GetBoolNewline() == true) {
+        _buffer_cl.clear();
+        _buffer_cl.append(buff);
+        SetBoolNewline(false);
+        return ;
+    }
     _buffer_cl.append(buff);
 }
 
@@ -52,6 +58,10 @@ void Clients::SetBoolUsername(bool val) {
 
 void Clients::SetBoolIdentify(bool val) {
     __identify_ = val;
+}
+
+void Clients::SetBoolNewline(bool val) {
+    __newline_ = val;
 }
 
 bool Clients::GetBoolPassword() const
@@ -72,6 +82,11 @@ bool Clients::GetBoolUsername() const
 bool Clients::GetBoolIdentify() const
 {
     return __identify_;
+}
+
+bool Clients::GetBoolNewline() const
+{
+    return __newline_;
 }
 
 std::string Clients::GetBuffer() const

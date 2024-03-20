@@ -15,6 +15,7 @@ class Clients
         bool __NickName_;
         bool __UserName_;
         bool __identify_;
+        bool __newline_;
 
     public:
         Clients(){};
@@ -22,6 +23,7 @@ class Clients
         ~Clients(){}
         std::string GetNickname() const;
         std::string GetUsername() const;
+        std::string GetBuffer() const;
         int GetFdClient() const;
 
         void setNickname(std::string nick);
@@ -32,11 +34,12 @@ class Clients
         void SetBoolNickname(bool);
         void SetBoolUsername(bool);
         void SetBoolIdentify(bool);
+        void SetBoolNewline(bool);
 
         bool GetBoolPassword() const;
         bool GetBoolNickname() const;
         bool GetBoolUsername() const;
         bool GetBoolIdentify() const;
+        bool GetBoolNewline() const;
 
-        std::string GetBuffer() const;
 };
