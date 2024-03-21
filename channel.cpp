@@ -39,14 +39,8 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	{
 		args[0][i] = std::toupper(args[0][i]);
 	}
-    if (args[0] == "JOIN" )
+    if (args[0] == "JOIN" || args[0] == "MODE")
         std::cout << "JOIN CMD\n";
-    else if (args[0] == "MODE" )
-        std::cout << "cmd not found\n";
-	else if (args[0] == "KICK")
-		std::cout << args[0] << std::endl;
-	else if (args[0] == "INVITE")
-		std::cout << args[0] << std::endl;
-	else if (args[0] == "TOPIC")
-		std::cout << args[0] << std::endl;
+	else if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
+		ft_handle_cmd(it, args);
 }
