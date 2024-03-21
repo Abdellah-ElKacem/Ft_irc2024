@@ -36,84 +36,151 @@ std::string Server::getPassword() const {
     return _password;
 }
 
+//----------------------> MSGRPLFORMAT [":<NCIKNAME>!~<REALNAME>@<HOSTNAME> <CMD> <TARGET> :<MSG>"]
+
+// ERRORREPLYFORMAT [":<ServerName> <StatusCode> <CLientNick> :<Msg>"]
+
 void Server::register_client(Clients& client) {
 
-    std::string part1, part2;
+    std::string part1, part2, part3 = "", part4 = "", part5 = "", msg;
 
-    part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
-    for (size_t i = 0; i < part1.size(); i++) {
-        part1[i] = std::toupper(part1.c_str()[i]);
-    } if (part1 != "PASS" && part1 != "NICK" && part1 != "USER") {
-        msg_client(client.GetFdClient(),"invalid Command\n");
-        return;
+    if (client.GetBoolNewline() == false && client.GetBoolOk() == true) {
+        part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
+        for (size_t i = 0; i < part1.size(); i++) {
+            part1[i] = std::toupper(part1.c_str()[i]);
+        } if (part1 != "PASS" && part1 != "NICK" && part1 != "USER") {
+            msg_client(client.GetFdClient(),"invalid Command\n");
+            return;
+        }
+        if ( client.GetBoolPassword() == false) {
+            if(part1 != "PASS") {
+                msg_client(client.GetFdClient(),"Set the Password first\n"); // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                return;
+            }
+            if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+                part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+            else
+                part2 = "";
+            if (part2.empty()) {
+                msg = ":ircserv_KAI.chat 461 * PASS :Not enough parameters\n";
+                msg_client(client.GetFdClient(),msg);
+                return;
+            } if (part2 != _password) {
+                msg = ":ircserv_KAI.chat 464 * PASS :Password incorrect\n";
+                msg_client(client.GetFdClient(),msg);
+                return;
+            }
+            client.SetBoolPassword(true);
+            return;
+        } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == false ) {
+            if(part1 != "NICK") {
+                msg_client(client.GetFdClient(),"Set NickName second\n"); // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                return;
+            }
+            if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+                part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+            else
+                part2 = "";
+            if (part2.empty()) {
+                msg = ":ircserv_KAI.chat 431 * NICK :No nickname given\n";
+                msg_client(client.GetFdClient(),msg);
+                return;
+            }
+            std::map<int, Clients>::iterator it;
+            for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+                if (it->second.GetNickname() == part2) {
+                    msg = ":ircserv_KAI.chat 433 " + part2 + " NICK :Nickname is already in use\n";
+                    msg_client(client.GetFdClient(),msg);
+                    return;
+                }
+            }
+            client.setNickname(part2);
+            client.SetBoolNickname(true);
+            return;
+        } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == false ) {
+            if(part1 != "USER") {
+                msg_client(client.GetFdClient(),"Set UserName third\n"); // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                return;
+            }
+            if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
+                part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+                std::cout << "part2 is : " << part2 << '\n';
+                if (for_iden_user(part2, part3, part4, part5) == 1){
+                    msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " USER :Not enough parameters\n";
+                    msg_client(client.GetFdClient(),msg);
+                    return;
+                }
+            }
+            else
+                part2 = "";
+            if (part2.empty()) {
+                msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " USER :Not enough parameters\n";
+                msg_client(client.GetFdClient(),msg);
+                return;
+            }
+            client.setUsername(part2);
+            client.setRealname(part4);
+            client.SetBoolUsername(true);
+            std::cout << "OK!...\n";
+            std::cout << "the client register on the server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
+            msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
+            client.SetBoolIdentify(true);
+        }
     }
-    // std::cout << std::boolalpha << client.GetBoolIdentify() << '\n';
-    if ( client.GetBoolPassword() == false) {
-        if(part1 != "PASS") {
-            msg_client(client.GetFdClient(),"Set the Password first\n");
-            return;
+}
+
+int Server::for_iden_user(std::string &part2, std::string &part3, std::string &part4, std::string &part5) {
+    std::string tmp = "", tmp1 = "", tmp_fake = "";
+    size_t idx = part2.find(' ');
+    int idx_prv = 0;
+    bool fullname = false;
+    while(idx != part2.npos) {
+        // std::cout << idx_prv << " - " << idx << '\n';
+        if (part2[idx + 1] == ':') {
+            tmp = part2.substr(idx + 2, part2.length());
+            fullname = true;
+        } else if(tmp.empty())
+            tmp = part2.substr(idx_prv, idx - idx_prv);
+        if(tmp1.empty()) {
+            tmp1 = tmp;
+            if (fullname == true)
+                break;
+        } else if (part3.empty()) {
+            part3 = tmp;
+            if (fullname == true)
+                break;
+        } else if (part4.empty()) {
+            part4 = tmp;
+            if (fullname == true)
+                break;
+        } else if (part5.empty()) {
+            part5 = tmp;
+            if (fullname == true)
+                break;
+        } else if (tmp_fake.empty()) {
+            tmp_fake = tmp;
+            if (fullname == true)
+                break;
         }
-        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
-            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-        else
-            part2 = "";
-        if (part2.empty()) {
-            msg_client(client.GetFdClient(),"Write the Password\n");
-            return;
-        } if (part2 != _password) {
-            msg_client(client.GetFdClient(),"Wrong password, Try again...\n");
-            return;
-        }
-        client.SetBoolPassword(true);
-        if (part2.empty()) {
-            msg_client(client.GetFdClient(),"Write the Password\n");
-            return;
-        } if (part2 != _password) {
-            msg_client(client.GetFdClient(),"Wrong password, Try again...\n");
-            return;
-        }
-        client.SetBoolPassword(true);
-        return;
-    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == false ) {
-        if(part1 != "NICK") {
-            msg_client(client.GetFdClient(),"Set NickName second\n");
-            return;
-        }
-        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
-            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-        else
-            part2 = "";
-        if (part2.empty()) {
-            msg_client(client.GetFdClient(),"Write the Nickname\n");
-            return;
-        }
-        client.setNickname(part2);
-        client.SetBoolNickname(true);
-        return;
-    } if ( client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == false ) {
-        if(part1 != "USER") {
-            msg_client(client.GetFdClient(),"Set UserName third\n");
-            return;
-        }
-        if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
-            part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-        else
-            part2 = "";
-        if (part2.empty()) {
-            msg_client(client.GetFdClient(),"Write the Username\n");
-            return;
-        }
-        client.setUsername(part2);
-        client.SetBoolUsername(true);
-        std::cout << "OK!...\n";
-        msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
-        client.SetBoolIdentify(true);
+        idx_prv = idx + 1;
+        idx = part2.find(' ',idx_prv + 1);
+        tmp.clear();
+        // std::cout<< "after :" << idx_prv << " - " << idx << '\n';
     }
+    if (tmp_fake.empty() && part5.empty())
+        part5 = part2.substr(idx_prv, part2.length());
+    else
+        tmp_fake = part2.substr(idx_prv, part2.length());
+    part2 = tmp1;
+    std::cout << '[' << part2 << "] - [" << part3 << "] - [" << part4 << "] - [" << part5 << "] - [" << tmp_fake<< "]\n";
+    if (!tmp_fake.empty())
+        return 1;
+    return 0;
 }
 
 void Server::msg_client(int fd_client, std::string message) {
     if (send(fd_client, message.c_str() , message.size(), 0) == -1)
-        std::cerr << "sa\n";
+        std::cerr << "Error: send\n";
 }
 
 void Server::welcome_client(int fd_client) {
@@ -140,10 +207,9 @@ int Server::accept_func()
 	_fds.push_back(add_to_poll(client_fd));
     Clients client(client_fd);
     map_of_clients[client.GetFdClient()] = client;
-    std::cout << "client connected\n";
+    std::cout << "a client connected\n";
     return 0;
 }
-
 
 void Server::init__and_run()
 {
@@ -196,22 +262,22 @@ void Server::init__and_run()
                         _fds.erase(_fds.begin() + i);
                         continue;
                     }
-                    // std::cout << _buffer << _buffer.size() << " - [" << _buffer.back()<<  "]\n";
                     if (_buffer.back() == '\n') {
                         _buffer.pop_back();
                         map_of_clients[_fds[i].fd].SetBoolNewline(true);
                     } if (_buffer.back() == '\r')
                         _buffer.pop_back();
-                    // std::cout << _buffer << _buffer.size() << '\n';
                     if (recvv) {
                         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
                             if (it->second.GetFdClient() == _fds[i].fd) {
+                                it->second.SetBoolOk(false);
                                 it->second.SetBuffer(_buffer);
-                                // std::cout << std::boolalpha << it->second.GetBoolNewline() << '\n';
                                 if (it->second.GetBoolIdentify() == false)
                                     authenticate_client(it->second);
                                 else
-                                    std::cout << "the client {" << _fds[i].fd << "} said : " << it->second.GetBuffer() << std::endl;
+                                    std::cout << "the client {" << _fds[i].fd << "} said : [" << it->second.GetBuffer() << "]\n";
+                                if (it->second.GetBoolNewline() == false)
+                                    it->second.Buff_clear();
                             }
                         }
                     }
@@ -228,45 +294,3 @@ void Server::init__and_run()
         _fds.erase(_fds.begin() + i);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// int Server::the_commands(char *buff, int i)
-// {
-//     std::map<std::string, Clients>::iterator it;
-//     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
-//     _buffer.clear();
-//     _buffer.append(buff);
-//     if (recvv == -1) {
-//         std::cout << "failed recv\n";
-//     }
-//     if (recvv == 0) {
-//         std::cout << "client disconnected\n";
-//         close(_fds[i].fd);
-//         _fds.erase(_fds.begin() + i);
-//         return 1;
-//     }
-//     if (_buffer.back()-- == '\r') {
-//         _buffer.pop_back();
-//         _buffer.pop_back();
-//     } else
-//         _buffer.pop_back();
-//     if (recvv) {
-//         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-//             if (it->second.GetFdClient() == _fds[i].fd)
-//                 authenticate_client(it->second);
-//         }
-//     }
-//         // std::cout << "the client {" << _fds[i].fd << "} said : " << _buffer << std::endl;
-//     return 0;
-// }
