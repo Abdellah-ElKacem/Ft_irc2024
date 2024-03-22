@@ -1,8 +1,9 @@
 #include "Clients.hpp"
 
 Clients::Clients(int fd) {
-    _nick_name = "";
+    _nick_name = "*";
     _user_name = "";
+    _real_name = "";
     // pass_in_client = 0;
     fd_of_client = fd;
 
