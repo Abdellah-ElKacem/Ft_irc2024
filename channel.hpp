@@ -20,4 +20,8 @@ class channel
         bool _is_locked;
 };
 
+void ft_handle_cmd(std::map<int ,Clients>::iterator& , std::vector<std::string> &);
 void check_cmd(std::map<int ,Clients>::iterator it);
+void pars_join_mode(std::vector<std::string> cmd);
+
+extern std::map<std::string, channel> _channel_list;

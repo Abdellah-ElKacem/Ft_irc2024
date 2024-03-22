@@ -43,5 +43,3 @@ class Clients
         bool GetBoolNewline() const;
  
 };
-
-void pars_cmd(std::vector<std::string> cmd);
