@@ -41,16 +41,14 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 {
     std::vector<std::string> args;
 	std::string command = it->second.GetBuffer();
+	if (command.empty())
+		return;
     ft_split_command(command, args);
-	for (size_t i = 0; i < args.size(); i++)
-	{
-		std::cout << args[i] << std::endl;
-	}
-	
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);
 	}
+	
     if (args[0] == "JOIN" || args[0] == "MODE")
         std::cout << "JOIN CMD\n";
 	else if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
