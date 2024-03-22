@@ -2,7 +2,7 @@ NAME = ircserv
 
 HEADER = Server.hpp Clients.hpp channel.hpp
 
-SRC = main.cpp Server.cpp Clients.cpp channel.cpp
+SRC = main.cpp Server.cpp Clients.cpp channel.cpp join_mode.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

@@ -41,6 +41,6 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	}
     if (args[0] == "JOIN" || args[0] == "MODE")
         std::cout << "JOIN CMD\n";
-	else if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
-		ft_handle_cmd(it, args);
+	// else if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
+	// 	// ft_handle_cmd(it, args);
 }
