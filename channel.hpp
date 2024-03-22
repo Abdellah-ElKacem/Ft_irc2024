@@ -19,5 +19,5 @@ class channel
         // channel();
         // ~channel();
 };
-
+void ft_handle_cmd(std::map<int ,Clients>::iterator& , std::vector<std::string> &);
 void check_cmd(std::map<int ,Clients>::iterator it);

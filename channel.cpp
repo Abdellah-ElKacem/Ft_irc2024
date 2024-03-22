@@ -13,28 +13,40 @@ void trim(std::string& str)
 	str =  str.substr(bigen , (last - bigen + 1));
 }
 
-void    ft_split_command(std::map<int ,Clients>::iterator& it, std::vector<std::string>& args)
+void    ft_split_command(std::string& command, std::vector<std::string>& args)
 {
-    std::string command = it->second.GetBuffer();
 	trim(command);
+	std::string temp;
 	size_t i = 0;
     while (i < command.size())
     {
         if ((command[i] >= 9 && command[i] <= 13) || command[i] == 32)
-            break;
-		i++;
+		{
+			args.push_back(temp);
+			temp = "";
+			while (i < command.size() && ((command[i] >= 9 && command[i] <= 13) || command[i] == 32))
+				i++;
+		}
+		else
+		{
+			temp.push_back(command[i]);
+			i++;
+		}
     }
-	args.push_back(command.substr(0, i));
-	command = command.substr(i, command.size() - 1);
-	trim(command);
-	args.push_back(command);
+	if (!temp.empty())
+        args.push_back(temp);
 }
 
 void check_cmd(std::map<int ,Clients>::iterator it)
 {
     std::vector<std::string> args;
-
-    ft_split_command(it, args);
+	std::string command = it->second.GetBuffer();
+    ft_split_command(command, args);
+	for (size_t i = 0; i < args.size(); i++)
+	{
+		std::cout << args[i] << std::endl;
+	}
+	
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);
