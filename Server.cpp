@@ -41,8 +41,12 @@ std::string Server::getPassword() const {
 // ERRORREPLYFORMAT [":<ServerName> <StatusCode> <CLientNick> :<Msg>"]
 
 bool Server::parce_nick(std::string &part2) {
-    (void)part2;
-    return true;
+    for (size_t i = 0; i < part2.length(); i++) {
+        if ( part2[i] != std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
+            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\')
+                return false;
+    }
+    return true;    
 }
 
 void Server::register_client(Clients& client) {
@@ -109,6 +113,11 @@ void Server::register_client(Clients& client) {
                 client.setNickname(part2);
                 client.SetBoolNickname(true);
             } else if ( part1 == "USER" ) {
+                // if ( client.GetBoolUsername() == true ) {
+                //     msg = ":ircserv_KAI.chat 462 " + client.GetNickname() + " PASS :You may not reregister\r\n";
+                //     msg_client(client.GetFdClient(),msg);
+                //     return;
+                // }
                 if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
                     part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
                     if (for_iden_user(part2, part5) == 1){
@@ -159,7 +168,7 @@ int Server::for_iden_user(std::string &part2, std::string &part5) {
         tmp.clear();
     }
     identi_user.push_back(part2.substr(idx_prv));
-    if (identi_user.size() != 4)
+    if (identi_user.size() < 4)
         return 1;
     part2 = identi_user[0];
     part5 = identi_user[3];
@@ -216,7 +225,7 @@ void Server::init__and_run()
         std::perror("Error Bind");
         exit(EXIT_FAILURE);
     }
-    if (listen(_server_sock,50) == -1) {
+    if (listen(_server_sock, NUM_OF_CONNECTIONS) == -1) {
         std::perror("Error Listen");
         exit(EXIT_FAILURE);
     }
