@@ -42,6 +42,7 @@ class Server
         void msg_client(int fd_client, std::string);
         void authenticate_client(Clients&);
         void register_client(Clients&);
+        bool parce_nick(std::string&);
 };
 
 
