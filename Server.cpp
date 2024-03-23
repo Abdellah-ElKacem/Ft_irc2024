@@ -210,10 +210,7 @@ void Server::init__and_run()
                                 it->second.SetBuffer(_buffer);
                                 // std::cout << std::boolalpha << it->second.GetBoolNewline() << '\n';
                                 if (it->second.GetBoolIdentify() == false)
-                                {
                                     authenticate_client(it->second);
-                                
-                                }
                                 else
                                     check_cmd(it);
                             }

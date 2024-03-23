@@ -31,4 +31,4 @@ void check_cmd(std::map<int ,Clients>::iterator it);
 void pars_join_mode(std::vector<std::string> cmd);
 
 extern std::map<std::string, channel> _channel_list;
-extern std::map<std::string, Clients> _channel_list;
+
