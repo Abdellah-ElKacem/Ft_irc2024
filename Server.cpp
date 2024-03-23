@@ -42,7 +42,7 @@ std::string Server::getPassword() const {
 
 bool Server::parce_nick(std::string &part2) {
     for (size_t i = 0; i < part2.length(); i++) {
-        if ( part2[i] != std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
+        if ( !std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
             && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\')
                 return false;
     }
