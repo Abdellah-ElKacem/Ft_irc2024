@@ -1,6 +1,7 @@
 #include "channel.hpp"
 #include "Clients.hpp"
 
+std::map<std::string, channel> _channel_list;
 
 void trim(std::string& str)
 {
@@ -43,18 +44,23 @@ void check_cmd(std::map<int ,Clients>::iterator it)
     std::vector<std::string> args;
 	std::string command = it->second.GetBuffer();
     ft_split_command(command, args);
-	// for (size_t i = 0; i < args.size(); i++)
-	// {
-	// 	std::cout << args[i] << std::endl;
-	// }
-	
+
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);
 	}
     if (args[0] == "JOIN" || args[0] == "MODE")
-		pars_join_mode(args);
-        
+		pars_join_mode(args, it);
+
+
+	std::map<std::string, channel>::iterator pr;
+	for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
+	{
+		std::cout << "channel name --> " << pr->first << std::endl;
+		std::cout << "operetors list --> " << pr->second._operetos_list[0] << std::endl;
+
+		std::cout << "-----------\n";
+	}
 	// else if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
 	// 	// ft_handle_cmd(it, args);
 }
