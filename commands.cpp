@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/23 16:04:15 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/24 21:27:16 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,18 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 		}	
 	}
 }
+
+bool ft_check_client(std::vector<std::string>& args)
+{
+	std::map<std::string, Clients>::iterator it;
+	for (size_t i = 1; i < args.size() - 1; i++)
+	{
+		it = nick_clients.find(args[i]);
+		if (nick_clients.end() == it)
+			return false;
+	}
+	return true;
+}
 void	ft_handle_invite(client& it , std::vector<std::string> &args)
 {
 	channels channel_it;
@@ -109,14 +121,74 @@ void	ft_handle_invite(client& it , std::vector<std::string> &args)
 		return ;
 	}
 	channel_it = _channel_list.find(args[2]);
-	// if (channel_it == _channel_list.end())
-	// 	return ;
-	if (channel_it == _channel_list.end())
+	if (!ft_check_client(args))
+		std::cerr << "No such nick" << std::endl;
+	else if (channel_it == _channel_list.end())
 	    std::cerr << "No such channel" << std::endl;
     else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
         std::cerr << "You don't have enough channel privileges" << std::endl;
 	else
 		channel_it->second._invited_list.push_back(args[1]);	
+}
+
+
+void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
+{
+	vector_it memeber = std::find(it_channels->second._members_list.begin(), it_channels->second._members_list.end(), sender->second.GetNickname());
+	std::string recivers_name;
+	std::map<std::string, Clients>::iterator recivers_fd;
+	if (memeber == it_channels->second._members_list.end())
+	{
+		std::cerr << "Cannot send to channel (+n)" << std::endl;
+		return ;
+	}
+	for (size_t i = 0; i < it_channels->second._members_list.size(); i++)
+	{
+		recivers_name = it_channels->second._members_list[i];
+		recivers_fd = nick_clients.find(recivers_name);
+		if (recivers_name == sender->second.GetNickname())
+			continue;
+		if (recivers_fd != nick_clients.end())
+		{
+			write(recivers_fd->second.GetFdClient(), &msg, msg.length() + 1);
+			write(recivers_fd->second.GetFdClient(), "\n\r", 2);
+		}
+	}
+	
+}
+
+void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
+{
+	std::map<std::string, Clients>::iterator it_clients;
+	channels it_channels;
+
+	for (size_t i = 1; i < args.size() - 1; i++)
+	{
+		it_clients = nick_clients.find(args[i]);
+		it_channels = _channel_list.find(args[i]);
+		
+		if (it_channels == _channel_list.end() && args[i][0] == '#')
+		{
+			std::cerr << "no such channel" << std::endl;
+			return ;
+		}
+		else if (it_clients == nick_clients.end() && args[i][0] != '#')
+		{
+			std::cerr << "no such nick" << std::endl;
+			return ;
+		}
+		else
+		{
+			if (args[i][0] == '#')
+				msg_chennel(it_channels, args[args.size() - 1], sender);
+			else
+			{
+				std::cout << args[i] << " : ";
+				write(it_clients->second.GetFdClient(), &args[args.size() - 1], args[args.size() - 1].length() + 1);
+				write(it_clients->second.GetFdClient(), "\n\r", 2);
+			}
+		}
+	}		
 }
 
 void ft_handle_cmd(client& it, std::vector<std::string> &args)
@@ -128,4 +200,7 @@ void ft_handle_cmd(client& it, std::vector<std::string> &args)
 		ft_handle_kick(it , args);
 	else if (args[0] == "INVITE")
 		ft_handle_invite(it , args);
+	else if (args[0] == "PRIVMSG")
+		ft_handle_privmsg(it , args);
+
 }

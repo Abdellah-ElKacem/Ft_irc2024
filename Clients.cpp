@@ -1,8 +1,9 @@
 #include "Clients.hpp"
 
 Clients::Clients(int fd) {
-    _nick_name = "";
+    _nick_name = "*";
     _user_name = "";
+    _real_name = "";
     // pass_in_client = 0;
     fd_of_client = fd;
 
@@ -21,6 +22,10 @@ std::string Clients::GetUsername() const {
     return _user_name;
 }
 
+std::string Clients::GetRealname() const {
+    return _real_name;
+}
+
 int Clients::GetFdClient() const {
     return fd_of_client;
 }
@@ -33,15 +38,41 @@ void Clients::setUsername(std::string user) {
     _user_name = user;
 }
 
+void Clients::setRealname(std::string real) {
+    _real_name = real;
+}
+
+void Clients::Buff_clear() {
+    _buffer_cl_final.clear();
+}
+
 void Clients::SetBuffer(std::string buff)
 {
     if (GetBoolNewline() == true) {
-        _buffer_cl.clear();
         _buffer_cl.append(buff);
+        _buffer_cl_final = _buffer_cl;
+        _buffer_cl.clear();
         SetBoolNewline(false);
+        SetBoolOk(true);
         return ;
     }
     _buffer_cl.append(buff);
+}
+
+void Clients::SetBoolNewline(bool val) {
+    __newline_ = val;
+}
+
+bool Clients::GetBoolNewline() const {
+    return __newline_;
+}
+
+bool Clients::GetBoolOk() const {
+    return __buff_ok_;
+}
+
+void Clients::SetBoolOk(bool val) {
+    __buff_ok_ = val;
 }
 
 void Clients::SetBoolPassword(bool val) {
@@ -58,10 +89,6 @@ void Clients::SetBoolUsername(bool val) {
 
 void Clients::SetBoolIdentify(bool val) {
     __identify_ = val;
-}
-
-void Clients::SetBoolNewline(bool val) {
-    __newline_ = val;
 }
 
 bool Clients::GetBoolPassword() const
@@ -84,12 +111,7 @@ bool Clients::GetBoolIdentify() const
     return __identify_;
 }
 
-bool Clients::GetBoolNewline() const
-{
-    return __newline_;
-}
-
 std::string Clients::GetBuffer() const
 {
-    return _buffer_cl;
+    return _buffer_cl_final;
 }

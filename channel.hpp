@@ -25,6 +25,7 @@ class channel
 // typdefinition
     typedef std::map<std::string, channel>::iterator channels;
     typedef std::map<int ,Clients>::iterator client;
+    typedef std::vector<std::string>::iterator vector_it;
 
 void ft_handle_cmd(client& , std::vector<std::string> &);
 void check_cmd(std::map<int ,Clients>::iterator it);

@@ -9,8 +9,9 @@ channel::channel()
 	_ch_name = "#channel";
 	_topic_name = "test_channel";
 	_members_list.push_back("alae");
-	_operetos_list.push_back("alae");
 	_members_list.push_back("test");
+	_members_list.push_back("7amid");
+	_operetos_list.push_back("alae");
 }
 
 void trim(std::string& str)
@@ -66,6 +67,6 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	}
     // if (args[0] == "JOIN" || args[0] == "MODE")
 	// 	pars_join_mode(args);  
-	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC")
+	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC" || args[0] == "PRIVMSG")
 		ft_handle_cmd(it, args);
 }
