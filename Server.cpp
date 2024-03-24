@@ -49,37 +49,84 @@ bool Server::parce_nick(std::string &part2) {
     return true;    
 }
 
+int Server::switch_aft(std::string cmd) {
+    if(!std::strcmp(cmd.c_str(), "JOIN"))
+        return 0;
+    if(!std::strcmp(cmd.c_str(), "KICK"))
+        return 1;
+    if(!std::strcmp(cmd.c_str(), "INVITE"))
+        return 2;
+    if(!std::strcmp(cmd.c_str(), "TOPIC"))
+        return 3;
+    if(!std::strcmp(cmd.c_str(), "MODE"))
+        return 5;
+    return 6;
+}
+
+void Server::if_pass(Clients client, std::string part2) {
+    std::string msg;
+    if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
+        part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+    else
+        part2 = "";
+    if (part2.empty()) {
+        msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
+        msg_client(client.GetFdClient(),msg);
+        return;
+    } if (part2 != _password) {
+        msg = ":ircserv_KAI.chat 464 " + client.GetNickname() + " PASS :Password incorrect\r\n";
+        msg_client(client.GetFdClient(),msg);
+        return;
+    }
+    client.SetBoolPassword(true);
+}
+
+void Server::if_nick(Clients client, std::string part2) {
+    std::string msg;
+    if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
+        part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+        if(!parce_nick(part2)) {
+            msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickname\r\n";
+            msg_client(client.GetFdClient(),msg);
+            return;
+        }
+    }
+    else
+        part2 = "";
+    if (part2.empty()) {
+        msg = ":ircserv_KAI.chat 431 " + client.GetNickname() + " NICK :No nickname given\r\n";
+        msg_client(client.GetFdClient(),msg);
+        return;
+    }
+    std::map<int, Clients>::iterator it;
+    for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+        if (it->second.GetNickname() == part2) {
+            msg = ":ircserv_KAI.chat 433 " + part2 + " NICK :Nickname is already in use\r\n";
+            msg_client(client.GetFdClient(),msg);
+            return;
+        }
+    }
+    client.setNickname(part2);
+    client.SetBoolNickname(true);
+}
+
 void Server::register_client(Clients& client) {
 
-    std::string part1, part2, part3 = "", part4 = "", part5 = "", msg;
+    std::string part1, part2, part5 = "", msg;
+    std::string after_regis[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRVMSG"};
 
     if (client.GetBoolNewline() == false && client.GetBoolOk() == true) {
         part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
         for (size_t i = 0; i < part1.size(); i++) {
             part1[i] = std::toupper(part1.c_str()[i]);
-        } if (part1 != "PASS" && part1 != "NICK" && part1 != "USER") {
-            msg_client(client.GetFdClient(),"invalid Command\r\n");
+        } if (part1 == "JOIN" || part1 == "KICK" || part1 == "INVITE" || part1 == "TOPIC" || part1 == "MODE" || part1 == "PRVMSG") {
+            int index = switch_aft(part1);
+            msg = ":ircserv_KAI.chat 451 " + client.GetNickname() + ' ' + after_regis[index] + " :You have not registered\r\n";
+            msg_client(client.GetFdClient(), msg);
             return;
         }
-        if ( client.GetBoolPassword() == false ) {
-            if(part1 != "PASS") {
-                msg_client(client.GetFdClient(),"Set the Password first\r\n"); // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                return;
-            }
-            if (client.GetBuffer().find(" ") != client.GetBuffer().npos)
-                part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-            else
-                part2 = "";
-            if (part2.empty()) {
-                msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
-                msg_client(client.GetFdClient(),msg);
-                return;
-            } if (part2 != _password) {
-                msg = ":ircserv_KAI.chat 464 " + client.GetNickname() + " PASS :Password incorrect\r\n";
-                msg_client(client.GetFdClient(),msg);
-                return;
-            }
-            client.SetBoolPassword(true);
+        if ( part1 == "PASS" && client.GetBoolPassword() == false ) {
+            if_pass(client, part2);
             return;
         } else if ( client.GetBoolPassword() == true ) {
             if (part1 == "PASS" && client.GetBoolPassword() == true) {
@@ -87,31 +134,7 @@ void Server::register_client(Clients& client) {
                 msg_client(client.GetFdClient(),msg);
                 return;
             } if ( part1 == "NICK" ) {
-                if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
-                    part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-                    if(!parce_nick(part2)) {
-                        msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickname\r\n";
-                        msg_client(client.GetFdClient(),msg);
-                        return;
-                    }
-                }
-                else
-                    part2 = "";
-                if (part2.empty()) {
-                    msg = ":ircserv_KAI.chat 431 " + client.GetNickname() + " NICK :No nickname given\r\n";
-                    msg_client(client.GetFdClient(),msg);
-                    return;
-                }
-                std::map<int, Clients>::iterator it;
-                for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                    if (it->second.GetNickname() == part2) {
-                        msg = ":ircserv_KAI.chat 433 " + part2 + " NICK :Nickname is already in use\r\n";
-                        msg_client(client.GetFdClient(),msg);
-                        return;
-                    }
-                }
-                client.setNickname(part2);
-                client.SetBoolNickname(true);
+                if_nick(client, part2);
             } else if ( part1 == "USER" ) {
                 // if ( client.GetBoolUsername() == true ) {
                 //     msg = ":ircserv_KAI.chat 462 " + client.GetNickname() + " PASS :You may not reregister\r\n";
@@ -143,7 +166,7 @@ void Server::register_client(Clients& client) {
             }
             if (client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true) {
                 std::cout << "OK!...\n";
-                std::cout << "the client register on the server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
+                std::cout << "the client register on the ircserv_KAI.chat server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
                 msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
                 client.SetBoolIdentify(true);
             }
@@ -182,9 +205,9 @@ void Server::msg_client(int fd_client, std::string message) {
 
 void Server::welcome_client(int fd_client) {
     std::string message;
-    message = "       _Welcome to the Server_\r\n";
+    message = "_Welcome to the \" ircserv_KAI.chat \" server_\r\n";
     send(fd_client, message.c_str() , message.size(), 0);
-    message = "           <~ ::Enter:: ~>\n<Password> - <Nick_name> - <Username>\r\n";
+    message = "              <~ ::Enter:: ~>\n    <Password> - <Nick_name> - <Username>\r\n";
     send(fd_client, message.c_str() , message.size(), 0);
 }
 
@@ -209,7 +232,6 @@ int Server::accept_func()
     return 0;
 }
 
-#include <fcntl.h>
 void Server::init__and_run()
 {
     if ((_server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -245,15 +267,10 @@ void Server::init__and_run()
         } for (size_t i = 0; i < _fds.size(); ++i) {
             if (_fds[i].revents & POLLIN) {
                 if (_fds[i].fd == _server_sock) {
-                    std::cout << "server fd has incommimg connection(s)\n";
-                    while (1)
-                    {
+                    while (1) {
                         if (accept_func())
-                            break;
-                        
-                    }
-                    // if (accept_func())
-                        continue;
+                            break;  
+                    } continue;
                 } else {
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
@@ -280,9 +297,11 @@ void Server::init__and_run()
                                 it->second.SetBoolOk(false);
                                 it->second.SetBuffer(_buffer);
                                 if (it->second.GetBoolIdentify() == false)
-                                    authenticate_client(it->second);
+                                    // authenticate_client(it->second);
+                                    register_client(it->second);
                                 else
-                                    std::cout << "the client {" << _fds[i].fd << "} said : [" << it->second.GetBuffer() << "]\n";
+                                    std::cout << "the client <:" << _fds[i].fd << ":> said : [" << it->second.GetBuffer() << "]\n";
+                                    // std::cout << it->second.GetBuffer() << "\n";
                                 if (it->second.GetBoolNewline() == false)
                                     it->second.Buff_clear();
                             }
