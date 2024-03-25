@@ -42,7 +42,7 @@ class Server
         int for_iden_user(std::string&, std::string&);
         void welcome_client(int fd_client);
         void msg_client(int fd_client, std::string);
-        void authenticate_client(Clients&);
+        void if_authenticate_client(Clients&);
         void register_client(Clients&);
         bool parce_nick(std::string&);
 };

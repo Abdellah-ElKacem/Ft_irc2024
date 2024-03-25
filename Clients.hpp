@@ -5,8 +5,8 @@
 class Clients
 {
     private:
-        int fd_of_client;
-        // int pass_in_client;
+        int _fd_of_client;
+        std::string _ip_client;
         std::string _nick_name;
         std::string _user_name;
         std::string _real_name;
@@ -22,13 +22,14 @@ class Clients
 
     public:
         Clients(){}
-        Clients(int fd);
+        Clients(int f, std::string ip_client);
         ~Clients(){}
         std::string GetNickname() const;
         std::string GetUsername() const;
         std::string GetRealname() const;
         std::string GetBuffer() const;
         int GetFdClient() const;
+        std::string GetIpClient() const;
 
         void setNickname(std::string nick);
         void setUsername(std::string user);
