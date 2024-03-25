@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/25 17:09:17 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/25 21:26:01 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,16 @@ bool ft_check_list(std::vector<std::string>& vec, std::string name)
 	return false;
 }
 
+void send_msg(client& it, std::string& msg)
+{
+	send(it->second.GetFdClient(), &msg, msg.length() + 1 , 0);
+}
+
+void send_msg(client& it, const char *str)
+{
+	std::string msg(str);
+	send(it->second.GetFdClient(), &msg, msg.length() + 1 , 0);
+}
 // bool ft_check_channel(channels& channel_it, std::string &channel_name)
 // {
 // 	if (channel_it->second._ch_name == channel_name)
@@ -32,7 +42,13 @@ bool ft_check_list(std::vector<std::string>& vec, std::string name)
 void ft_handle_topic(client& it, std::vector<std::string> &args)
 {
 	channels channel_it;
+	std::string msg;
 
+	if (args.size() == 1)
+	{
+		send(it->second.GetFdClient(), "not enough arguments", 20, 0);
+		return ;
+	}
 	if (args.size() > 1)
 	{
 		channel_it = _channel_list.find(args[1]);
@@ -61,10 +77,6 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		{
 			channel_it->second._is_topiced = true;
 			channel_it->second._topic_name = args[2];
-		}
-		else
-		{
-			std::cout << "not enough arguments" << std::endl;
 		}
 	}
 	
