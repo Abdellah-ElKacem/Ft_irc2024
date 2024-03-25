@@ -38,8 +38,6 @@ class Server
         std::string _the_port;
         std::string _buffer;
         int accept_func();
-        void if_pass(Clients, std::string);
-        void if_nick(Clients, std::string);
         int switch_aft(std::string cmd);
         int for_iden_user(std::string&, std::string&);
         void welcome_client(int fd_client);
