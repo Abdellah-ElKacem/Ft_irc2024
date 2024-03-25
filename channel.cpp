@@ -3,17 +3,6 @@
 
 std::map<std::string, channel> _channel_list;
 
-channel::channel()
-{
-	_is_topiced = true;
-	_ch_name = "#channel";
-	_topic_name = "test_channel";
-	_members_list.push_back("alae");
-	_members_list.push_back("test");
-	_members_list.push_back("7amid");
-	_operetos_list.push_back("alae");
-}
-
 void trim(std::string& str)
 {
 	size_t bigen = str.find_first_not_of(" \n\t\v");
@@ -51,22 +40,27 @@ void    ft_split_command(std::string& command, std::vector<std::string>& args)
 }
 
 
-
 void check_cmd(std::map<int ,Clients>::iterator it)
 {
-	channel test;
     std::vector<std::string> args;
 	std::string command = it->second.GetBuffer();
 	if (command.empty())
 		return;
     ft_split_command(command, args);
-	_channel_list.insert(std::make_pair("#channel", test));
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);
 	}
-    // if (args[0] == "JOIN" || args[0] == "MODE")
-	// 	pars_join_mode(args);  
+    if (args[0] == "JOIN" || args[0] == "MODE")
+		pars_join_mode(args, it);  
 	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC" || args[0] == "PRIVMSG")
 		ft_handle_cmd(it, args);
+	// std::map<std::string, channel>::iterator pr;
+	// for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
+	// {
+	// 	std::cout << "channel name --> " << pr->first << std::endl;
+	// 	std::cout << "operetors list --> " << pr->second._operetos_list[0] << std::endl;
+
+	// }
+	// std::cout << "-----------\n";
 }

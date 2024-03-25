@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/24 21:27:16 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/25 17:09:17 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,10 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 	if (args.size() == 2)
 	{
 		if (channel_it->second._is_topiced)
-		{
 			std::cout << channel_it->second._topic_name << std::endl;
-		}
 		else
 			std::cout << "No topic is set" << std::endl;
+		return ;
 	}
 	if (ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
 	{
@@ -58,10 +57,10 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 			channel_it->second._is_topiced = false;
 			channel_it->second._topic_name = "";
 		}
-		else if (args.size() > 2)
+		else if (args.size() == 3)
 		{
 			channel_it->second._is_topiced = true;
-			channel_it->second._topic_name = args[1];
+			channel_it->second._topic_name = args[2];
 		}
 		else
 		{
@@ -94,6 +93,8 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 			else
 			{
 				search_it = std::find(channel_it->second._members_list.begin(), channel_it->second._members_list.end(), args[i]); 
+				std::cout << "args " << i << " "<< args[i] << std::endl;
+				std::cout << "search_it " << i << " "<< *search_it << std::endl;
 				channel_it->second._members_list.erase(search_it);
 				std::cout << "KICK " << channel_it->second._ch_name << " " << args[i] << std::endl;
 			}
@@ -135,8 +136,9 @@ void	ft_handle_invite(client& it , std::vector<std::string> &args)
 void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 {
 	vector_it memeber = std::find(it_channels->second._members_list.begin(), it_channels->second._members_list.end(), sender->second.GetNickname());
+
 	std::string recivers_name;
-	std::map<std::string, Clients>::iterator recivers_fd;
+	std::map<std::string, Clients>::iterator recivers_fd;;
 	if (memeber == it_channels->second._members_list.end())
 	{
 		std::cerr << "Cannot send to channel (+n)" << std::endl;
@@ -146,15 +148,13 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 	{
 		recivers_name = it_channels->second._members_list[i];
 		recivers_fd = nick_clients.find(recivers_name);
-		if (recivers_name == sender->second.GetNickname())
-			continue;
-		if (recivers_fd != nick_clients.end())
+		if (recivers_name != sender->second.GetNickname())
 		{
+			std::cout << msg << std::endl;
 			write(recivers_fd->second.GetFdClient(), &msg, msg.length() + 1);
 			write(recivers_fd->second.GetFdClient(), "\n\r", 2);
 		}
 	}
-	
 }
 
 void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
@@ -193,7 +193,6 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 
 void ft_handle_cmd(client& it, std::vector<std::string> &args)
 {
-	// channels channel_it = _channel_list.begin();
 	if (args[0] == "TOPIC")
 		ft_handle_topic(it ,args);
 	else if (args[0] == "KICK")
@@ -202,5 +201,4 @@ void ft_handle_cmd(client& it, std::vector<std::string> &args)
 		ft_handle_invite(it , args);
 	else if (args[0] == "PRIVMSG")
 		ft_handle_privmsg(it , args);
-
 }
