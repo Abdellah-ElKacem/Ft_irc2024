@@ -5,6 +5,9 @@
 #include <map>
 #include "Clients.hpp"
 
+
+#define ERR_NEEDMOREPARAMS(nick, cmd) ":ircserv_KAI.chat 461 " + nick + " " + cmd + " :Not enough parameters\r\n"
+
 class channel
 {
     public:
