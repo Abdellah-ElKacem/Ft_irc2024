@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/25 21:26:01 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/25 22:43:45 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 
 void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 {
+	
 	std::map<std::string, Clients>::iterator it_clients;
 	channels it_channels;
 

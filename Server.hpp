@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <vector>
 #include <map>
+#include <fcntl.h>
 
 #include "Clients.hpp"
 
@@ -37,10 +38,11 @@ class Server
         std::string _the_port;
         std::string _buffer;
         int accept_func();
+        int switch_aft(std::string cmd);
         int for_iden_user(std::string&, std::string&);
         void welcome_client(int fd_client);
         void msg_client(int fd_client, std::string);
-        void authenticate_client(Clients&);
+        void if_authenticate_client(Clients&);
         void register_client(Clients&);
         bool parce_nick(std::string&);
 };

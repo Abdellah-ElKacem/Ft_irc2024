@@ -15,6 +15,16 @@ int main(int ac, char *av[]) {
             return EXIT_FAILURE;
         }
     }
-    Server server_sock(av[1], av[2]);
+    std::string port = av[1], password = av[2];
+    if (port.empty() || password.empty()) {
+        if (port.empty() && password.empty())
+            std::cerr << "Error:\n";
+        else if (port.empty())
+            std::cerr << "Error: need a valid port\n";
+        else
+            std::cerr << "Error: need a valid password\n";
+        return EXIT_FAILURE;
+    }
+    Server server_sock(port, password);
     return EXIT_SUCCESS;
 }
