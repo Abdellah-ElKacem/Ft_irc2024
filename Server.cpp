@@ -268,6 +268,16 @@ int Server::accept_func()
     return 0;
 }
 
+void Server::trim_string()
+{
+    std::stringstream trim(_buffer);
+    std::string no_space, tmp;
+    while (trim >> no_space)
+        tmp.append(no_space + ' ');
+    tmp.erase(tmp.size() - 1);
+    _buffer = tmp;
+}
+
 void Server::init__and_run()
 {
     if ((_server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -327,18 +337,18 @@ void Server::init__and_run()
                         map_of_clients[_fds[i].fd].SetBoolNewline(true);
                     } if (_buffer.back() == '\r')
                         _buffer.pop_back();
+                    trim_string();
                     if (recvv) {
                         for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
                             if (it->second.GetFdClient() == _fds[i].fd) {
                                 it->second.SetBoolOk(false);
                                 it->second.SetBuffer(_buffer);
                                 if (it->second.GetBoolIdentify() == false)
-                                    // authenticate_client(it->second);
                                     register_client(it->second);
-                                else
+                                else {
                                     if_authenticate_client(it->second);
-                                    // std::cout << "the client <:" << _fds[i].fd << ":> said : [" << it->second.GetBuffer() << "]\n";
-                                    // std::cout << it->second.GetBuffer() << "\n";
+                                    //check cmd
+                                }
                                 if (it->second.GetBoolNewline() == false)
                                     it->second.Buff_clear();
                             }
