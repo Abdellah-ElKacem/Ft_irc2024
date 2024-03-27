@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/26 23:57:56 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/27 01:08:38 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		channel_it = _channel_list.find(args[1]);
 		if (channel_it == _channel_list.end())
 		{
-			send_rep(it->second.GetFdClient(), NO_SUCH_CHANNEL(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
+			send_rep(it->second.GetFdClient(), NO_SUCH_CHANNEL(it->second.GetNickname(), args[1]));
 			return ;
 		}
 	}
