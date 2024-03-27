@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/25 22:43:45 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/26 23:57:56 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,16 +21,6 @@ bool ft_check_list(std::vector<std::string>& vec, std::string name)
 	return false;
 }
 
-void send_msg(client& it, std::string& msg)
-{
-	send(it->second.GetFdClient(), &msg, msg.length() + 1 , 0);
-}
-
-void send_msg(client& it, const char *str)
-{
-	std::string msg(str);
-	send(it->second.GetFdClient(), &msg, msg.length() + 1 , 0);
-}
 // bool ft_check_channel(channels& channel_it, std::string &channel_name)
 // {
 // 	if (channel_it->second._ch_name == channel_name)
@@ -38,15 +28,25 @@ void send_msg(client& it, const char *str)
 // 	return true;
 // }
 
+void ft_send_to_all(std::string msg, channels it)
+{
+	std::map<std::string, Clients>::iterator it_clients;
+
+	for (size_t i = 0; i < it->second._members_list.size(); i++)
+	{
+		it_clients = nick_clients.find(it->second._members_list[i]);
+		send_rep(it_clients->second.GetFdClient(), msg);
+	}
+	
+}
 
 void ft_handle_topic(client& it, std::vector<std::string> &args)
 {
 	channels channel_it;
-	std::string msg;
 
 	if (args.size() == 1)
 	{
-		send(it->second.GetFdClient(), "not enough arguments", 20, 0);
+		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));
 		return ;
 	}
 	if (args.size() > 1)
@@ -54,16 +54,17 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		channel_it = _channel_list.find(args[1]);
 		if (channel_it == _channel_list.end())
 		{
-			std::cout << "No such channel" << std::endl;
+			send_rep(it->second.GetFdClient(), NO_SUCH_CHANNEL(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
 			return ;
 		}
 	}
 	if (args.size() == 2)
 	{
 		if (channel_it->second._is_topiced)
-			std::cout << channel_it->second._topic_name << std::endl;
+			send_rep(it->second.GetFdClient(), RPL_TOPIC_VALUE(it->second.GetIpClient(), it->second.GetNickname(), args[1], channel_it->second._ch_name));
+			// std::cout << channel_it->second._topic_name << std::endl;
 		else
-			std::cout << "No topic is set" << std::endl;
+			send_rep(it->second.GetFdClient(), RPL_NO_TOPIC_SET(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
 		return ;
 	}
 	if (ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
@@ -77,6 +78,7 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		{
 			channel_it->second._is_topiced = true;
 			channel_it->second._topic_name = args[2];
+			ft_send_to_all(RPL_TOPIC_VALUE(it->second.GetIpClient(), it->second.GetNickname(), channel_it->second._ch_name, args[2]), channel_it);
 		}
 	}
 	
@@ -88,7 +90,7 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	std::vector<std::string>::iterator search_it;
 	if (args.size() <= 2)
 	{
-		std::cerr << "Not enough parameters" << std::endl;
+		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));
 		return;
 	}
 	channel_it = _channel_list.find(args[1]);
@@ -130,7 +132,7 @@ void	ft_handle_invite(client& it , std::vector<std::string> &args)
 	channels channel_it;
 	if (args.size() <= 2)
 	{
-		std::cout << "Not enough parameters" << std::endl;
+		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));
 		return ;
 	}
 	channel_it = _channel_list.find(args[2]);
@@ -150,7 +152,7 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 	vector_it memeber = std::find(it_channels->second._members_list.begin(), it_channels->second._members_list.end(), sender->second.GetNickname());
 
 	std::string recivers_name;
-	std::map<std::string, Clients>::iterator recivers_fd;;
+	std::map<std::string, Clients>::iterator recivers_fd;
 	if (memeber == it_channels->second._members_list.end())
 	{
 		std::cerr << "Cannot send to channel (+n)" << std::endl;

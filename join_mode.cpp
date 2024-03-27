@@ -14,6 +14,11 @@ channel::channel(std::string ch_name)
     this->_pass = "123";
 }
 
+void send_rep(int fd, std::string msg)
+{
+    if (send(fd, msg.c_str() , msg.size(), 0) == -1)
+        std::cerr << "ERROR: send\n";
+}
 
 channel::~channel()
 {}
@@ -73,13 +78,11 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
 {
     std::vector<std::string>::iterator inv_find;
     std::vector<std::string>::iterator mem_find;
-    std::vector<std::string>::iterator op_find;
     int is_in_inv = 0;
 
     mem_find = std::find(it->second._members_list.begin(), it->second._members_list.end(), it_c->second.GetNickname());
-    op_find = std::find(it->second._operetos_list.begin(), it->second._operetos_list.end(), it_c->second.GetNickname());
 
-    if (mem_find == it->second._members_list.end() && op_find == it->second._operetos_list.end())
+    if (mem_find == it->second._members_list.end())
     {
         if (it->second._limit_members == true)
         {
@@ -145,5 +148,8 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
                 i++;
             }
         }
+        else
+            std::cout << "ds" << std::endl;
+            // send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), cmd[0]));
     }
 }
