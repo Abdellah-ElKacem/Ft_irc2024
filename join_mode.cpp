@@ -1,5 +1,6 @@
 #include "channel.hpp"
 
+std::string name_srv = "ircserv_KAI.chat";
 channel::channel()
 {}
 
@@ -137,12 +138,11 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
             buffer.push_back('t');
         if (it_find->second._limit_members)
             buffer.push_back('l');
-        send_rep(it_c->second.GetFdClient(), RPL_CHANNELMODEIS(it_c->second.GetNickname(), it_find->first, buffer));
-        send_rep(it_c->second.GetFdClient(), RPL_CREATIONTIME(it_c->second.GetNickname(), it_find->first, time));
+        send_rep(it_c->second.GetFdClient(), RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
+        send_rep(it_c->second.GetFdClient(), RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
     }
     else
-    {}
-        // send_rep(it_c->second.GetFdClient(), ERR_NOSUCHCHANNEL(it_c->second.GetNickname(), it_find->first));
+        send_rep(it_c->second.GetFdClient(), ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), it_find->first));
 }
 
 
@@ -177,7 +177,7 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
             }
         }
         else
-            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), cmd[0]));
+            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
     else 
     {
@@ -190,6 +190,6 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
             std::cout << "change channel modes \n";
         }
         else 
-            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), cmd[0]));
+            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
 }
