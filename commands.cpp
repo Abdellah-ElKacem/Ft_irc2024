@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/27 01:51:11 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/27 02:20:52 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,8 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	}
 	channel_it = _channel_list.find(args[1]);
 	if (channel_it == _channel_list.end())
-		std::cerr << "No such channel" << std::endl;
+		send_rep(it->second.GetFdClient(),ERR_NOSUCHCHANNEL(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
+	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
 	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
 		std::cerr << "You don't have enough channel privileges" << std::endl;
 	else
@@ -111,9 +112,8 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 			else
 			{
 				search_it = std::find(channel_it->second._members_list.begin(), channel_it->second._members_list.end(), args[i]); 
-				std::cout << "args " << i << " "<< args[i] << std::endl;
-				std::cout << "search_it " << i << " "<< *search_it << std::endl;
 				channel_it->second._members_list.erase(search_it);
+				// send_rep(it->second.GetFdClient(), RPL_KICK(it->second.GetNickname(), it->second.GetIpClient(), channel_it->second._ch_name, ))
 				std::cout << "KICK " << channel_it->second._ch_name << " " << args[i] << std::endl;
 			}
 		}	
