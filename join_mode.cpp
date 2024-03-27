@@ -6,12 +6,12 @@ channel::channel()
 channel::channel(std::string ch_name)
 {
     this->_ch_name = ch_name;
-    this->_is_locked = true;
+    this->_is_locked = false;
     this->_is_invited = false;
     this->_is_topiced = false;
     this->_limit_members = false;
 
-    this->_pass = "123";
+    // this->_pass = "123";
 }
 
 void send_rep(int fd, std::string msg)

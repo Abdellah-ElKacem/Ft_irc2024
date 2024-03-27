@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/27 01:08:38 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/27 01:51:11 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,21 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		channel_it = _channel_list.find(args[1]);
 		if (channel_it == _channel_list.end())
 		{
-			send_rep(it->second.GetFdClient(), NO_SUCH_CHANNEL(it->second.GetNickname(), args[1]));
+			send_rep(it->second.GetFdClient(), ERR_NOSUCHCHANNEL(it->second.GetIpClient() , it->second.GetNickname(), args[1]));
+			return ;
+		}
+		else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
+		{
+			send_rep(it->second.GetFdClient(), ERR_NOTONCHANNEL(it->second.GetIpClient(), args[1]));
 			return ;
 		}
 	}
 	if (args.size() == 2)
 	{
-		if (channel_it->second._is_topiced)
-			send_rep(it->second.GetFdClient(), RPL_TOPIC_VALUE(it->second.GetIpClient(), it->second.GetNickname(), args[1], channel_it->second._ch_name));
-			// std::cout << channel_it->second._topic_name << std::endl;
+		if (!channel_it->second._topic_name.empty())
+			send_rep(it->second.GetFdClient(), RPL_VIEWTOPIC(it->second.GetIpClient(), it->second.GetNickname(), channel_it->second._ch_name, channel_it->second._topic_name));
 		else
-			send_rep(it->second.GetFdClient(), RPL_NO_TOPIC_SET(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
+		    send_rep(it->second.GetFdClient(), RPL_NOTOPIC(it->second.GetIpClient(), it->second.GetNickname(), channel_it->second._ch_name));
 		return ;
 	}
 	if (ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
@@ -78,7 +82,7 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		{
 			channel_it->second._is_topiced = true;
 			channel_it->second._topic_name = args[2];
-			ft_send_to_all(RPL_TOPIC_VALUE(it->second.GetIpClient(), it->second.GetNickname(), channel_it->second._ch_name, args[2]), channel_it);
+			ft_send_to_all(RPL_TOPIC(it->second.GetIpClient(), it->second.GetNickname(), channel_it->second._ch_name, args[2]), channel_it);
 		}
 	}
 	

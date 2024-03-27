@@ -69,13 +69,13 @@ int Server::switch_aft(std::string cmd) {
 
 void Server::if_authenticate_client(Clients& client) {
     std::string cmd, msg, cmd_p, part_cmd, old_nick;
-    std::string the_command[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRVMSG"};
+    std::string the_command[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRIVMSG"};
     std::string regis_cmd[2] = {"PASS", "USER"};
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     cmd_p = cmd;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
-    } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRVMSG" && cmd != "PASS" && cmd != "USER" && cmd != "NICK" ){
+    } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" && cmd != "PASS" && cmd != "USER" && cmd != "NICK" ){
         msg = ":ircserv_KAI.chat 421 " + client.GetNickname() + ' ' + cmd_p + " :Unknown command\r\n";
         msg_client(client.GetFdClient(), msg);
     } else if (cmd == "PASS" || cmd == "USER") {
@@ -117,13 +117,13 @@ void Server::if_authenticate_client(Clients& client) {
 void Server::register_client(Clients& client) {
 
     std::string part1, part2, part5 = "", msg;
-    std::string after_regis[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRVMSG"};
+    std::string after_regis[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRIVMSG"};
 
     if (client.GetBoolNewline() == false && client.GetBoolOk() == true) {
         part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
         for (size_t i = 0; i < part1.size(); i++) {
             part1[i] = std::toupper(part1.c_str()[i]);
-        } if (part1 == "JOIN" || part1 == "KICK" || part1 == "INVITE" || part1 == "TOPIC" || part1 == "MODE" || part1 == "PRVMSG") {
+        } if (part1 == "JOIN" || part1 == "KICK" || part1 == "INVITE" || part1 == "TOPIC" || part1 == "MODE" || part1 == "PRIVMSG") {
             int index = switch_aft(part1);
             msg = ":ircserv_KAI.chat 451 " + client.GetNickname() + ' ' + after_regis[index] + " :You have not registered\r\n";
             msg_client(client.GetFdClient(), msg);
@@ -340,8 +340,8 @@ void Server::init__and_run()
                                     register_client(it->second);
                                 else
                                 {
-                                    check_cmd(it);
                                     if_authenticate_client(it->second);
+                                    check_cmd(it);
                                 }
                                 if (it->second.GetBoolNewline() == false)
                                     it->second.Buff_clear();
