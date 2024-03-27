@@ -55,12 +55,16 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 		pars_join_mode(args, it);  
 	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC" || args[0] == "PRIVMSG")
 		ft_handle_cmd(it, args);
-	// std::map<std::string, channel>::iterator pr;
-	// for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
-	// {
-	// 	std::cout << "channel name --> " << pr->first << std::endl;
-	// 	std::cout << "operetors list --> " << pr->second._operetos_list[0] << std::endl;
+	std::map<std::string, channel>::iterator pr;
+	for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
+	{
+		std::cout << "channel name --> " << pr->first << std::endl;
+		for (size_t i = 0; i < pr->second._members_list.size(); i++)
+		{
+			std::cout << "operetors list --> " << pr->second._members_list[i] << std::endl;
+		}
+		
 
-	// }
-	// std::cout << "-----------\n";
+	}
+	std::cout << "-----------\n";
 }
