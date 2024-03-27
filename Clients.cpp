@@ -1,11 +1,11 @@
 #include "Clients.hpp"
 
-Clients::Clients(int fd) {
+Clients::Clients(int fd, std::string ip_client) {
     _nick_name = "*";
     _user_name = "";
     _real_name = "";
-    // pass_in_client = 0;
-    fd_of_client = fd;
+    _fd_of_client = fd;
+    _ip_client = ip_client;
 
     __Password_ = false;
     __NickName_ = false;
@@ -27,7 +27,11 @@ std::string Clients::GetRealname() const {
 }
 
 int Clients::GetFdClient() const {
-    return fd_of_client;
+    return _fd_of_client;
+}
+
+std::string Clients::GetIpClient() const {
+    return _ip_client;
 }
 
 void Clients::setNickname(std::string nick) {
