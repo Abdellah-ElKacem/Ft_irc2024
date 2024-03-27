@@ -2,6 +2,7 @@
 #include "channel.hpp"
 
 std::map<int, Clients>map_of_clients;
+std::map<std::string, Clients>nick_clients;
 
 Server::Server(const std::string port, const std::string password)
 {
@@ -46,7 +47,7 @@ bool Server::parce_nick(std::string &part2) {
         return false;
     for (size_t i = 0; i < part2.length(); i++) {
         if ( !std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
-            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\')
+            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\' )
                 return false;
     }
     return true;    
@@ -204,6 +205,7 @@ void Server::register_client(Clients& client) {
                 std::cout << "the client register on the ircserv_KAI.chat server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
                 msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
                 client.SetBoolIdentify(true);
+                nick_clients.insert(std::make_pair(client.GetNickname(), client));
             }
         }
     }

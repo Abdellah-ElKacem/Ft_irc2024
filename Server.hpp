@@ -49,3 +49,4 @@ class Server
 
 
 extern std::map<int, Clients>map_of_clients;
+extern std::map<std::string, Clients>nick_clients;

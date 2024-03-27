@@ -190,6 +190,6 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
             std::cout << "change channel modes \n";
         }
         else 
-            std::cout << "not valid\n";
+            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), cmd[0]));
     }
 }
