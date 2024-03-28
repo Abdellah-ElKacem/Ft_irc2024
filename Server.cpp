@@ -117,8 +117,9 @@ void Server::register_client(Clients& client) {
     std::string part1, part2, part5 = "", msg;
     std::string after_regis[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRVMSG"};
 
-    if (client.GetBoolNewline() == false && client.GetBoolOk() == true) {
+    if (client.GetBoolOk() == false) {
         part1 = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
+        // std::cout <<"part1 -> :"<< part1 << std::endl;
         for (size_t i = 0; i < part1.size(); i++) {
             part1[i] = std::toupper(part1.c_str()[i]);
         } if (part1 == "JOIN" || part1 == "KICK" || part1 == "INVITE" || part1 == "TOPIC" || part1 == "MODE" || part1 == "PRVMSG") {
@@ -144,11 +145,12 @@ void Server::register_client(Clients& client) {
             client.SetBoolPassword(true);
             return;
         } else if ( client.GetBoolPassword() == true ) {
-            if (part1 == "PASS" && client.GetBoolPassword() == true) {
-                    msg = ":ircserv_KAI.chat -1 " + client.GetNickname() + " PASS :You are already put the password\r\n";
-                msg_client(client.GetFdClient(),msg);
-                return;
-            } if ( part1 == "NICK" ) {
+            // if (part1 == "PASS" && client.GetBoolPassword() == true) {
+            //         msg = ":ircserv_KAI.chat -1 " + client.GetNickname() + " PASS :You are already put the password\r\n";
+            //     msg_client(client.GetFdClient(),msg);
+            //     return;
+            // }
+            if ( part1 == "NICK" ) {
                 if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
                     part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
                     if(!parce_nick(part2)) {
@@ -268,16 +270,6 @@ int Server::accept_func()
     return 0;
 }
 
-void Server::trim_string()
-{
-    std::stringstream trim(_buffer);
-    std::string no_space, tmp;
-    while (trim >> no_space)
-        tmp.append(no_space + ' ');
-    tmp.erase(tmp.size() - 1);
-    _buffer = tmp;
-}
-
 void Server::init__and_run()
 {
     if ((_server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -323,6 +315,7 @@ void Server::init__and_run()
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
                     _buffer.clear();
                     _buffer.append(buff);
+                    // _buffer.append("pass 1\nnick as\nuser asd sad sad asd asd \r\n");
                     if (recvv == -1) {
                         std::cout << "failed recv\n";
                     }
@@ -332,26 +325,22 @@ void Server::init__and_run()
                         _fds.erase(_fds.begin() + i);
                         continue;
                     }
-                    if (_buffer.back() == '\n') {
-                        _buffer.pop_back();
-                        map_of_clients[_fds[i].fd].SetBoolNewline(true);
-                    } if (_buffer.back() == '\r')
-                        _buffer.pop_back();
-                    trim_string();
                     if (recvv) {
-                        for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                            if (it->second.GetFdClient() == _fds[i].fd) {
-                                it->second.SetBoolOk(false);
-                                it->second.SetBuffer(_buffer);
+                        it = map_of_clients.find(_fds[i].fd);
+                        it->second.SetBoolOk(false);
+                        it->second.SetBoolNewline(false);
+                        it->second.SetBuffer_tmp(_buffer);
+                        while (!it->second.GetBuffer_tmp().empty()) {
+                            it->second.check_new_line();
+                            it->second.trim_string();
+                            if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);
-                                else {
+                                else
                                     if_authenticate_client(it->second);
-                                    //check cmd
-                                }
-                                if (it->second.GetBoolNewline() == false)
-                                    it->second.Buff_clear();
                             }
+                            if (it->second.GetBoolNewline() == true)
+                                it->second.Buff_clear();
                         }
                     }
                 }

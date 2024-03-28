@@ -4,6 +4,7 @@ Clients::Clients(int fd, std::string ip_client) {
     _nick_name = "*";
     _user_name = "";
     _real_name = "";
+    _buffer_cl = "";
     _fd_of_client = fd;
     _ip_client = ip_client;
 
@@ -63,6 +64,10 @@ void Clients::SetBuffer(std::string buff)
     _buffer_cl.append(buff);
 }
 
+void Clients::SetBuffer_tmp(std::string buff) {
+    _buffer_cl = buff;
+}
+
 void Clients::SetBoolNewline(bool val) {
     __newline_ = val;
 }
@@ -73,6 +78,32 @@ bool Clients::GetBoolNewline() const {
 
 bool Clients::GetBoolOk() const {
     return __buff_ok_;
+}
+
+void Clients::check_new_line() {
+    size_t idx = _buffer_cl.find('\n');
+    if (idx != _buffer_cl.npos) {
+        _buffer_cl_final += _buffer_cl.substr(0, idx);
+        _buffer_cl = _buffer_cl.substr(idx + 1);
+        SetBoolNewline(true);
+    } else {
+        _buffer_cl_final.append(_buffer_cl);
+        _buffer_cl.clear();
+        SetBoolNewline(false);
+    }
+    if (_buffer_cl_final.back() == '\r')
+        _buffer_cl_final.pop_back();
+}
+
+void Clients::trim_string() {
+    if(!_buffer_cl_final.empty()) {
+        std::stringstream trim(_buffer_cl_final);
+        std::string no_space, tmp;
+        while (trim >> no_space)
+            tmp.append(no_space + ' ');
+        tmp.erase(tmp.size() - 1);
+        _buffer_cl_final = tmp;
+    }
 }
 
 void Clients::SetBoolOk(bool val) {
@@ -118,4 +149,9 @@ bool Clients::GetBoolIdentify() const
 std::string Clients::GetBuffer() const
 {
     return _buffer_cl_final;
+}
+
+std::string Clients::GetBuffer_tmp() const
+{
+    return _buffer_cl;
 }
