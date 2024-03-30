@@ -1,6 +1,6 @@
 NAME = ircserv
 
-HEADER = Server.hpp Clients.hpp channel.hpp
+HEADER = Server.hpp Clients.hpp channel.hpp replays.hpp
 
 SRC = main.cpp Server.cpp Clients.cpp channel.cpp join_mode.cpp commands.cpp
 

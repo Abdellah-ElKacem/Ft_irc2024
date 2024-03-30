@@ -63,8 +63,6 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 		{
 			std::cout << "operetors list --> " << pr->second._members_list[i] << std::endl;
 		}
-		
-
 	}
 	std::cout << "-----------\n";
 }

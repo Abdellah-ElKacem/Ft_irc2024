@@ -64,7 +64,7 @@ void    split_ch_pass(std::string& command, std::vector<std::string>& args)
         args.push_back(temp);
 }
 
-void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch, std::vector<std::string> pass_wd, int i)
+void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch)
 {
     std::string buffer;
     channel obj(name_ch);
@@ -73,12 +73,6 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
     obj._limit_nb++;
     buffer.push_back('+');
     buffer.push_back('t');
-    if ((unsigned int)i < pass_wd.size())
-    {
-        obj._is_locked = true;
-        obj._pass = pass_wd[i];
-        buffer.push_back('k');
-    }
     _channel_list.insert(std::make_pair(name_ch, obj));
 
     send_rep(it_c->second.GetFdClient(), RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), name_ch,it_c->second.GetIpClient()));
@@ -133,7 +127,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         }
         it->second._members_list.push_back(it_c->second.GetNickname());
         it->second._limit_nb++;
-        send_rep(it_c->second.GetFdClient(), RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first,it_c->second.GetIpClient()));
+        ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first,it_c->second.GetIpClient()), it);
     }
 }
 
@@ -141,7 +135,10 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 {
     std::map<std::string, channel>::iterator it_find = _channel_list.find(channel_mane);
     std::string buffer;
+
+    // std::time_t time = std::time(NULL);
     std::string time = "0";
+    
 
     if (it_find != _channel_list.end())
     {
@@ -162,6 +159,45 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 }
 
 
+void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list)
+{
+    std::string ch_name = cmd[1];
+    std::vector<std::string> modes;
+    std::vector<std::string> args;
+    std::map<std::string, channel>::iterator it_ch;
+
+    int z = 0;
+    it_ch = _channel_list.find(ch_name);
+    if (it_ch != _channel_list.end())
+    {
+        for (size_t i = 2; i <= cmd.size() - 1; i++)
+        {
+            if ((cmd[i][0] == '+' || cmd[i][0] == '-') && z == 0)
+                modes.push_back(cmd[i]);
+            else
+            {
+                if ((cmd[i][0] == '+' || cmd[i][0] == '-'))
+                    break;
+                args.push_back(cmd[i]);
+                z = 1;
+            }
+        }
+        // z = 0;
+        // for(size_t i = 2; i <= modes.size() - 1; i++)
+        // {
+            
+        // }
+    }
+    for (size_t i = 0; i < modes.size(); i++)
+    {
+        std::cout << "--> mode :" << modes[i] << std::endl;
+    }
+    for (size_t i = 0; i < args.size(); i++)
+    {
+        std::cout << "--> args :"<< args[i] << std::endl;
+    }
+}
+
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c)
 {
     std::vector<std::string> name;
@@ -178,16 +214,16 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
             if (cmd.size() >= 3)
                 split_ch_pass(cmd[2], pass);
             for (loop = name.begin(); loop != name.end(); loop++)
-            {
+            {   
                 if (_channel_list.size() == 0)
-                    creat_channel(_channel_list, it_c, *loop, pass, i);
+                    creat_channel(_channel_list, it_c, *loop);
                 else
                 {
                     it = _channel_list.find(*loop);
                     if (it != _channel_list.end())
                         join_user_to_channel(it_c, it, pass, i);
                     else
-                        creat_channel(_channel_list, it_c, *loop, pass, i);
+                        creat_channel(_channel_list, it_c, *loop);
                 }
                 i++;
             }
@@ -195,16 +231,12 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
         else
             send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
-    else 
+    else
     {
         if (cmd.size() == 2)
-        {
             show_modes(it_c, _channel_list, cmd[1]);
-        }
         else if (cmd.size() > 2)
-        {
-            std::cout << "change channel modes \n";
-        }
+            change_modes(cmd, _channel_list);
         else 
             send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
