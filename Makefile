@@ -1,8 +1,9 @@
 NAME = ircserv
 
-HEADER = Server.hpp Clients.hpp
+HEADER = Server.hpp Clients.hpp 
 
-SRC = main.cpp Server.cpp Clients.cpp
+SRC = main.cpp Server.cpp Clients.cpp identify_client/authenticate.cpp identify_client/register.cpp \
+	identify_client/parce_cmd.cpp messages.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
