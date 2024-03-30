@@ -127,7 +127,7 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
+                            // std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);

@@ -3,6 +3,8 @@
 void Server::if_authenticate_client(Clients& client) {
     std::string cmd, msg, cmd_p, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
+    if ( cmd.empty() )
+        return;
     cmd_p = cmd;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
@@ -22,7 +24,7 @@ void Server::if_authenticate_client(Clients& client) {
             if (part_cmd.back() == '_')
                 return;
             if(!parce_nick(part_cmd)) {
-                msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickn45ame\r\n";
+                msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickname\r\n";
                 msg_client(client.GetFdClient(),msg);
                 return;
             }
