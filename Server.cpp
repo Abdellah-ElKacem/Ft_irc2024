@@ -331,22 +331,18 @@ void Server::init__and_run()
                     } if (_buffer.back() == '\r')
                         _buffer.pop_back();
                     if (recvv) {
-                        for (it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                            if (it->second.GetFdClient() == _fds[i].fd) {
-                                it->second.SetBoolOk(false);
-                                it->second.SetBuffer(_buffer);
-                                if (it->second.GetBoolIdentify() == false)
-                                    // authenticate_client(it->second);
-                                    register_client(it->second);
-                                else
-                                {
-                                    if_authenticate_client(it->second);
-                                    check_cmd(it);
-                                }
-                                if (it->second.GetBoolNewline() == false)
-                                    it->second.Buff_clear();
-                            }
+                        it = map_of_clients.find(_fds[i].fd);
+                        it->second.SetBoolOk(false);
+                        it->second.SetBuffer(_buffer);
+                        if (it->second.GetBoolIdentify() == false)
+                            register_client(it->second);
+                        else
+                        {
+                            if_authenticate_client(it->second);
+                            check_cmd(it);
                         }
+                        if (it->second.GetBoolNewline() == false)
+                            it->second.Buff_clear();
                     }
                 }
             }

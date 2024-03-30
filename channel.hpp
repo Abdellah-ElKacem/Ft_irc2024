@@ -11,7 +11,6 @@
 class channel
 {
     public:
-
         std::string _ch_name;
         std::string _topic_name;
         std::string _pass;
@@ -41,5 +40,9 @@ void send_rep(int fd, std::string msg);
 void ft_handle_cmd(std::map<int ,Clients>::iterator& , std::vector<std::string> &);
 void check_cmd(std::map<int ,Clients>::iterator it);
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c);
-void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch);
+void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch, std::vector<std::string> pass_wd, int i);
 void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>::iterator it, std::vector<std::string> pass_wd, int i);
+void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>& _channel_list, std::string channel_mane);
+void send_rep(int fd, std::string msg);
+
+extern std::string server_name;

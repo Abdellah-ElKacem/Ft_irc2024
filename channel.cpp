@@ -2,6 +2,7 @@
 #include "Clients.hpp"
 
 std::map<std::string, channel> _channel_list;
+std::string server_name = "ircserv_KAI.chat";
 
 void trim(std::string& str)
 {
@@ -47,19 +48,29 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	if (command.empty())
 		return;
     ft_split_command(command, args);
+	std::cout << it->second.GetBuffer() << std::endl;
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);
 	}
+	// for (size_t i = 0; i < args.size(); i++)
+	// {
+	// 	std::cout << args[i] << std::endl;
+	// }
     if (args[0] == "JOIN" || args[0] == "MODE")
 		pars_join_mode(args, it);  
 	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC" || args[0] == "PRIVMSG")
 		ft_handle_cmd(it, args);
+	
 	// std::map<std::string, channel>::iterator pr;
 	// for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
 	// {
 	// 	std::cout << "channel name --> " << pr->first << std::endl;
-	// 	std::cout << "operetors list --> " << pr->second._operetos_list[0] << std::endl;
+	// 	for (size_t i = 0; i < pr->second._members_list.size(); i++)
+	// 	{
+	// 		std::cout << "operetors list --> " << pr->second._members_list[i] << std::endl;
+	// 	}
+		
 
 	// }
 	// std::cout << "-----------\n";
