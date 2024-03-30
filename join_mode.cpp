@@ -19,6 +19,28 @@ void send_rep(int fd, std::string msg)
         std::cerr << "ERROR: send\n";
 }
 
+std::string get_all(std::map<std::string, channel>::iterator it)
+{
+    std::string holder;
+    std::vector<std::string>::iterator it_find;
+
+    for (size_t i = 0; i <= it->second._members_list.size(); i++)
+    {
+        it_find = std::find(it->second._operetos_list.begin(), it->second._operetos_list.end(), it->second._members_list[i]);
+        if (it_find != it->second._operetos_list.end())
+        {
+            holder.append(" @");
+            holder.append(it->second._members_list[i]);
+        }
+        else    
+        {
+            holder.append(" ");
+            holder.append(it->second._members_list[i]);
+        }
+    }
+    return holder;
+}
+
 channel::~channel()
 {}
 
@@ -66,6 +88,11 @@ void    split_ch_pass(std::string& command, std::vector<std::string>& args)
 
 void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch)
 {
+    if (name_ch[0] != '#')
+    {
+        send_rep(it_c->second.GetFdClient(), ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), name_ch));
+        return ;
+    }
     std::string buffer;
     channel obj(name_ch);
     obj._operetos_list.push_back(it_c->second.GetNickname());
@@ -77,7 +104,7 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
 
     send_rep(it_c->second.GetFdClient(), RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), name_ch,it_c->second.GetIpClient()));
     send_rep(it_c->second.GetFdClient(), RPL_MODEIS(name_ch, name_srv, buffer));
-    send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, it_c->second.GetUsername(), name_ch, it_c->second.GetNickname()));
+    send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, "@" + it_c->second.GetNickname(), name_ch, it_c->second.GetNickname()));
     send_rep(it_c->second.GetFdClient(), RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), name_ch));
 }
 
@@ -128,6 +155,8 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         it->second._members_list.push_back(it_c->second.GetNickname());
         it->second._limit_nb++;
         ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first,it_c->second.GetIpClient()), it);
+        send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+        send_rep(it_c->second.GetFdClient(), RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
     }
 }
 
@@ -166,7 +195,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
     std::vector<std::string> args;
     std::map<std::string, channel>::iterator it_ch;
 
-    int z = 0;
+    size_t z = 0;
     it_ch = _channel_list.find(ch_name);
     if (it_ch != _channel_list.end())
     {
@@ -182,20 +211,30 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                 z = 1;
             }
         }
-        // z = 0;
-        // for(size_t i = 2; i <= modes.size() - 1; i++)
+        // z = 1;
+        // for(size_t i = 0; i <= modes.size() - 1; i++)
         // {
-            
+        //     for(size_t j = 1; j <= modes[i].length() - 1; j++)
+        //     {
+        //         if (z <= args.size())
+        //         {
+        //             if ()
+        //             {
+
+        //                 z++;
+        //             }
+        //         }
+        //     }
         // }
     }
-    for (size_t i = 0; i < modes.size(); i++)
-    {
-        std::cout << "--> mode :" << modes[i] << std::endl;
-    }
-    for (size_t i = 0; i < args.size(); i++)
-    {
-        std::cout << "--> args :"<< args[i] << std::endl;
-    }
+    // for (size_t i = 0; i < modes.size(); i++)
+    // {
+    //     std::cout << "--> mode :" << modes[i] << std::endl;
+    // }
+    // for (size_t i = 0; i < args.size(); i++)
+    // {
+    //     std::cout << "--+> args :"<< args[i] << std::endl;
+    // }
 }
 
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c)
