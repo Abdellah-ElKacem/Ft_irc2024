@@ -22,12 +22,13 @@ class Clients
 
     public:
         Clients(){}
-        Clients(int f, std::string ip_client);
+        Clients(int fd, std::string ip_client);
         ~Clients(){}
         std::string GetNickname() const;
         std::string GetUsername() const;
         std::string GetRealname() const;
         std::string GetBuffer() const;
+        std::string GetBuffer_tmp() const;
         int GetFdClient() const;
         std::string GetIpClient() const;
 
@@ -36,6 +37,7 @@ class Clients
         void setRealname(std::string real);
         void Buff_clear();
         void SetBuffer(std::string buff);
+        void SetBuffer_tmp(std::string buff);
 
         void SetBoolPassword(bool);
         void SetBoolNickname(bool);
@@ -50,5 +52,8 @@ class Clients
         bool GetBoolIdentify() const;
         bool GetBoolNewline() const;
         bool GetBoolOk() const;
+
+        void check_new_line();
+        void trim_string();
 
 };

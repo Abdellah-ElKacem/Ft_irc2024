@@ -45,6 +45,7 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 {
     std::vector<std::string> args;
 	std::string command = it->second.GetBuffer();
+	std::cout << command << std::endl;
 	if (command.empty())
 		return;
     ft_split_command(command, args);
