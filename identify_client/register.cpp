@@ -20,6 +20,9 @@ void Server::register_client(Clients& client) {
                 part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
             else
                 part2 = "";
+            if (part2.c_str()[0] == ':')
+                part2.erase(0, 1);
+            std::cout << part2 << std::endl;
             if (part2.empty()) {
                 msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
                 msg_client(client.GetFdClient(),msg);
@@ -88,9 +91,39 @@ void Server::register_client(Clients& client) {
                 client.SetBoolUsername(true);
             }
             if (client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true) {
-                std::cout << "OK!...\n";
-                std::cout << "the client register on the ircserv_KAI.chat server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
-                msg_client(client.GetFdClient(),"U are registed, enjoy...\n");
+                // std::cout << "OK!...\n";
+                // std::cout << "the client register on the ircserv_KAI.chat server and his NickName is : < " << client.GetNickname() << " > and realname is : < " << client.GetRealname() << " >\n";
+                std::ostringstream to_str;
+                std::string str_y, str_m, str_d, str_h, str_mi, str_s;
+                msg = ":ircserv_KAI.chat 001 " + client.GetNickname() + " :Welcome to the KAI_IRC Network, " + client.GetNickname() + " \r\n";                
+                msg_client(client.GetFdClient(), msg);
+                msg = ":ircserv_KAI.chat 002 " + client.GetNickname() + " :Your host is ircserv_KAI.chat, running version Vol:°01.. ©™ \r\n";
+                msg_client(client.GetFdClient(), msg);
+
+                time_t now = time(0);
+                tm *local_time = localtime(&now);
+
+                int year = 1900 + local_time->tm_year, month = 1 + local_time->tm_mon , day = local_time->tm_mday;
+                int hour = local_time->tm_hour, minute = local_time->tm_min, second = local_time->tm_sec;
+                to_str << year;
+                str_y = to_str.str();
+                to_str.clear();
+                to_str << month;
+                str_m = to_str.str();
+                to_str.clear();
+                to_str << day;
+                str_d = to_str.str();
+                to_str.clear();
+                to_str << hour;
+                str_h = to_str.str();
+                to_str.clear();
+                to_str << minute;
+                str_mi = to_str.str();
+                to_str.clear();
+                to_str << second;
+                str_s = to_str.str();
+                msg = ":ircserv_KAI.chat 003 " + client.GetNickname() + " :This server was created " + str_m + '/' + str_d + "/" + str_y + " at " + str_h + ':' + str_mi + ':' + str_s + " GMT \r\n";
+                msg_client(client.GetFdClient(), msg);
                 client.SetBoolIdentify(true);
             }
         }
