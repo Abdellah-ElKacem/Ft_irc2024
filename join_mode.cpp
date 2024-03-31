@@ -24,7 +24,7 @@ std::string get_all(std::map<std::string, channel>::iterator it)
     std::string holder;
     std::vector<std::string>::iterator it_find;
 
-    for (size_t i = 0; i <= it->second._members_list.size(); i++)
+    for (size_t i = 0; i < it->second._members_list.size(); i++)
     {
         it_find = std::find(it->second._operetos_list.begin(), it->second._operetos_list.end(), it->second._members_list[i]);
         if (it_find != it->second._operetos_list.end())
@@ -188,12 +188,57 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 }
 
 
-void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list)
+// ------------------------------------------------------------------------------------//
+// ------------------------------------ modes -----------------------------------------//
+// ------------------------------------------------------------------------------------//
+
+void handl_k(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
+{
+    it_ch->second._is_locked = true;
+    it_ch->second._pass = arg;
+
+    send_rep(it_c->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+k", arg, it_c->second.GetUsername()));
+}
+
+void handl_k_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    it_ch->second._is_locked = false;
+
+    send_rep(it_c->second.GetFdClient(), RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
+}
+
+void handl_o(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
+{
+    std::vector<std::string>::iterator find_it = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), arg);
+    std::map<std::string, Clients>::iterator it_clients;
+    if (find_it != it_ch->second._members_list.end())
+        it_ch->second._operetos_list.push_back(it_c->second.GetNickname());
+
+    it_clients = nick_clients.find(arg);
+    if (it_clients != nick_clients.end())
+        send_rep(it_clients->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
+    send_rep(it_c->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
+}
+
+void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
+{
+    std::vector<std::string>::iterator find_it = std::find(it_ch->second._operetos_list.begin(), it_ch->second._operetos_list.end(), arg);
+    if (find_it != it_ch->second._operetos_list.end())
+        it_ch->second._operetos_list.erase(find_it);
+    send_rep(it_c->second.GetFdClient(), RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
+}
+
+// ------------------------------------------------------------------------------------//
+// -------------------------------- main modes func -----------------------------------//
+// ------------------------------------------------------------------------------------//
+
+void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c)
 {
     std::string ch_name = cmd[1];
     std::vector<std::string> modes;
     std::vector<std::string> args;
     std::map<std::string, channel>::iterator it_ch;
+    int sign = 0;
 
     size_t z = 0;
     it_ch = _channel_list.find(ch_name);
@@ -211,30 +256,40 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                 z = 1;
             }
         }
-        // z = 1;
-        // for(size_t i = 0; i <= modes.size() - 1; i++)
-        // {
-        //     for(size_t j = 1; j <= modes[i].length() - 1; j++)
-        //     {
-        //         if (z <= args.size())
-        //         {
-        //             if ()
-        //             {
-
-        //                 z++;
-        //             }
-        //         }
-        //     }
-        // }
+        z = 1;
+        for(size_t i = 0; i <= modes.size() - 1; i++)
+        {
+            if (modes[i][0] == '-')
+                sign = 0;
+            else
+                sign = 1;
+            for(size_t j = 1; j <= modes[i].length() - 1; j++)
+            {
+                if (modes[i][j] == 'k')
+                {
+                    if (sign)
+                    {
+                        if (z <= args.size())
+                            handl_k(it_ch, args[z - 1], it_c);
+                    }
+                    else
+                        handl_k_m(it_ch, it_c);
+                    z++;
+                }
+                if (modes[i][j] == 'o')
+                {
+                    if (sign)
+                    {
+                        if (z <= args.size())
+                            handl_o(it_ch, args[z - 1], it_c);
+                    }
+                    else
+                        handl_o_m(it_ch, args[z - 1], it_c);
+                    z++;
+                }
+            }
+        }
     }
-    // for (size_t i = 0; i < modes.size(); i++)
-    // {
-    //     std::cout << "--> mode :" << modes[i] << std::endl;
-    // }
-    // for (size_t i = 0; i < args.size(); i++)
-    // {
-    //     std::cout << "--+> args :"<< args[i] << std::endl;
-    // }
 }
 
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c)
@@ -275,7 +330,7 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
         if (cmd.size() == 2)
             show_modes(it_c, _channel_list, cmd[1]);
         else if (cmd.size() > 2)
-            change_modes(cmd, _channel_list);
+            change_modes(cmd, _channel_list, it_c);
         else 
             send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
