@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/31 02:05:08 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/03/31 03:25:15 by ael-kace         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,14 +144,14 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 			channel_it->second._topic_name = "";
 		else
 		{
-			std::cout << args.size() << std::endl;
+			// std::cout << args.size() << std::endl;
 			if (args.size() == 3 || args[2][0] != ':')
 				channel_it->second._topic_name = args[2];
 			else
 			{
 				ft_extract_long_line(long_line, args);
 				channel_it->second._topic_name = long_line;
-				std::cout << long_line << std::endl;
+				// std::cout << long_line << std::endl;
 			}
 			ft_send_to_all(RPL_SETTOPIC(it->second.GetNickname() ,it->second.GetUsername(), it->second.GetIpClient() ,channel_it->second._ch_name, channel_it->second._topic_name), channel_it);
 		}

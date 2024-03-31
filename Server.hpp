@@ -40,7 +40,7 @@ class Server
         std::string _password;
         std::string _the_port;
         std::string _buffer;
-        void bot(std::string cmd);
+        void bot(Clients&);
         int accept_func();
         void trim_string();
         int switch_aft(std::string cmd);

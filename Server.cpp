@@ -38,10 +38,6 @@ std::string Server::getPassword() const {
     return _password;
 }
 
-//----------------------> MSGRPLFORMAT [":<NCIKNAME>!~<REALNAME>@<HOSTNAME> <CMD> <TARGET> :<MSG>"]
-
-// ERRORREPLYFORMAT [":<ServerName> <StatusCode> <CLientNick> :<Msg>"]
-
 
 int Server::accept_func()
 {
@@ -127,14 +123,18 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
+                            // std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);
-                                else
-                                {
-                                    if_authenticate_client(it->second);
-                                    check_cmd(it);
+                                else {
+                                    // if (it->second.GetBuffer() == "/help") {
+                                    //     std::cout << "geeee\n";
+                                    //     bot(it->second);
+                                    // } else {
+                                        if_authenticate_client(it->second);
+                                        check_cmd(it);
+                                    // }
                                 }
                             }
                             if (it->second.GetBoolNewline() == true)

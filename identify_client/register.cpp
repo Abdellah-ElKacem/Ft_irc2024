@@ -22,7 +22,7 @@ void Server::register_client(Clients& client) {
                 part2 = "";
             if (part2.c_str()[0] == ':')
                 part2.erase(0, 1);
-            std::cout << part2 << std::endl;
+            // std::cout << part2 << std::endl;
             if (part2.empty()) {
                 msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
                 msg_client(client.GetFdClient(),msg);

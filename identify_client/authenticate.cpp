@@ -3,13 +3,16 @@
 void Server::if_authenticate_client(Clients& client) {
     std::string cmd, msg, cmd_p, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
-    if ( cmd.empty() )
+    
+    if ( cmd.empty() || cmd == "PONG" || cmd == "QUIT" )
         return;
     cmd_p = cmd;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
-    } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
-            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" ) {
+    } if (cmd == "HELP") {
+        bot(client);
+    } else if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
+            && cmd != "PASS" && cmd != "USER" && cmd != "NICK") {
         msg = ":ircserv_KAI.chat 421 " + client.GetNickname() + ' ' + cmd + " :Unknown command\r\n";
         msg_client(client.GetFdClient(), msg);
     } else if (cmd == "PASS" || cmd == "USER") {
