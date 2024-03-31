@@ -118,6 +118,7 @@ void Server::register_client(Clients& client) {
                 msg = ":ircserv_KAI.chat 003 " + client.GetNickname() + " :This server was created " + str_m + '/' + str_d + "/" + str_y + " at " + str_h + ':' + str_mi + ':' + str_s + " GMT \r\n";
                 msg_client(client.GetFdClient(), msg);
                 client.SetBoolIdentify(true);
+                nick_clients.insert(std::make_pair(client.GetNickname(), client));
             }
         }
     }
