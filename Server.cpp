@@ -109,8 +109,6 @@ void Server::init__and_run()
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
                     ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
-                    // _buffer.clear();
-                    // _buffer.append(buff);
                     _buffer = buff;
                     if (recvv == -1) {
                         std::cout << "failed recv\n";
@@ -129,7 +127,7 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            // std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
+                            std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);
