@@ -13,6 +13,7 @@ Clients::Clients(int fd, std::string ip_client) {
     __UserName_ = false;
     __identify_ = false;
     __newline_ = false;
+    __he_know_ = false;
 }
 
 std::string Clients::GetNickname() const {
@@ -80,6 +81,10 @@ bool Clients::GetBoolOk() const {
     return __buff_ok_;
 }
 
+bool Clients::GetBoolKnow() const {
+    return __he_know_;
+}
+
 void Clients::check_new_line() {
 
     size_t idx = _buffer_cl.find('\n');
@@ -110,6 +115,10 @@ void Clients::trim_string() {
 
 void Clients::SetBoolOk(bool val) {
     __buff_ok_ = val;
+}
+
+void Clients::SetBoolKnow(bool val) {
+    __he_know_ = val;
 }
 
 void Clients::SetBoolPassword(bool val) {

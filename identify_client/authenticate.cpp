@@ -38,8 +38,6 @@ void Server::if_authenticate_client(Clients& client) {
             return;
         }
         std::map<int, Clients>::iterator it;
-        std::map<std::string, channel>::iterator it_ch;
-        std::vector<std::string>::iterator it_nick;
         for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
             if (it->second.GetNickname() == part_cmd) {
                 msg = ":ircserv_KAI.chat 433 " + part_cmd + " NICK :Nickname is already in use\r\n";
@@ -47,13 +45,34 @@ void Server::if_authenticate_client(Clients& client) {
                 return;
             }
         }
+        for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+            it->second.SetBoolKnow(false);
+        }
         // channels -> send to users if bool false -  operators 
         client.setNickname(part_cmd);
+        for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+            if (it->second.GetNickname() == part_cmd) {
+                msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
+                msg_client(it->second.GetFdClient(), msg);
+                it->second.SetBoolKnow(true);
+            }
+        }
+        std::map<std::string, channel>::iterator it_ch;
+        std::vector<std::string>::iterator it_nick;
+        for (it_ch = _channel_list.begin(); it_ch != _channel_list.end(); it_ch++) {
+            it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), old_nick);
+            if (it_nick != it_ch->second._members_list.end()) {
+                if ()
+            }
+
+        }
+        
+
         // msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
         // msg_client(it->second.GetFdClient(), msg);
 
         // for (it_ch = _channel_list.begin(); it_ch != _channel_list.end(); it_ch++) {
-        //     it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), old_nick);
+        //     it_nick = std::find(it_ch->second._members_list.b egin(), it_ch->second._members_list.end(), old_nick);
         //     if (it_nick != it_ch->second._members_list.end())
         //     {
         //         it_ch->second._members_list.erase(it_nick);
@@ -73,10 +92,6 @@ void Server::if_authenticate_client(Clients& client) {
         //     }
         // }
         
-        // for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-        //     msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
-        //     msg_client(it->second.GetFdClient(), msg);
-        // }
     }
     return;
 }
