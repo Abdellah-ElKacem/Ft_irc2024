@@ -12,6 +12,9 @@
 #include <vector>
 #include <map>
 #include <fcntl.h>
+#include <sstream>
+#include <ctime>
+
 
 #include "Clients.hpp"
 
@@ -37,7 +40,9 @@ class Server
         std::string _password;
         std::string _the_port;
         std::string _buffer;
+        void bot(std::string cmd);
         int accept_func();
+        void trim_string();
         int switch_aft(std::string cmd);
         int for_iden_user(std::string&, std::string&);
         void welcome_client(int fd_client);
