@@ -18,6 +18,9 @@ Clients::Clients(int fd, std::string ip_client) {
 std::string Clients::GetNickname() const {
     return _nick_name;
 }
+std::string& Clients::GetNicknameref()  {
+    return _nick_name;
+}
 
 std::string Clients::GetUsername() const {
     return _user_name;
@@ -81,7 +84,9 @@ bool Clients::GetBoolOk() const {
 }
 
 void Clients::check_new_line() {
+
     size_t idx = _buffer_cl.find('\n');
+
     if (idx != _buffer_cl.npos) {
         _buffer_cl_final += _buffer_cl.substr(0, idx);
         _buffer_cl = _buffer_cl.substr(idx + 1);

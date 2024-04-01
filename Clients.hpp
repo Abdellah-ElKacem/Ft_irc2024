@@ -25,6 +25,7 @@ class Clients
         Clients(int fd, std::string ip_client);
         ~Clients(){}
         std::string GetNickname() const;
+        std::string& GetNicknameref() ;
         std::string GetUsername() const;
         std::string GetRealname() const;
         std::string GetBuffer() const;

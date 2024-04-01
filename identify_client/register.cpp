@@ -22,7 +22,7 @@ void Server::register_client(Clients& client) {
                 part2 = "";
             if (part2.c_str()[0] == ':')
                 part2.erase(0, 1);
-            std::cout << part2 << std::endl;
+            // std::cout << part2 << std::endl;
             if (part2.empty()) {
                 msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
                 msg_client(client.GetFdClient(),msg);
@@ -118,7 +118,7 @@ void Server::register_client(Clients& client) {
                 msg = ":ircserv_KAI.chat 003 " + client.GetNickname() + " :This server was created " + str_m + '/' + str_d + "/" + str_y + " at " + str_h + ':' + str_mi + ':' + str_s + " GMT \r\n";
                 msg_client(client.GetFdClient(), msg);
                 client.SetBoolIdentify(true);
-                nick_clients.insert(std::make_pair(client.GetNickname(), client));
+                nick_clients.insert(std::make_pair(client.GetNicknameref(), client));
             }
         }
     }

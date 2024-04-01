@@ -3,12 +3,13 @@
 void Server::if_authenticate_client(Clients& client) {
     std::string cmd, msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
-    if ( cmd.empty() )
+    
+    if ( cmd.empty() || cmd == "PONG" || cmd == "QUIT" )
         return;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
     } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
-            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" ) {
+            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" && cmd != "PING" && cmd != "PONG" ) {
         msg = ":ircserv_KAI.chat 421 " + client.GetNickname() + ' ' + cmd + " :Unknown command\r\n";
         msg_client(client.GetFdClient(), msg);
     } else if (cmd == "PASS" || cmd == "USER") {
@@ -43,11 +44,9 @@ void Server::if_authenticate_client(Clients& client) {
                 return;
             }
         }
-        //old_nick!~user_n@ip nick_cmd :new_nick
         client.setNickname(part_cmd);
         for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
                 msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
-                // msg = ":" + old_nick + " NICK " + client.GetNickname() + "\r\n";
                 msg_client(it->second.GetFdClient(), msg);
         }
     }

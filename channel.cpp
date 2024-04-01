@@ -49,7 +49,7 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	if (command.empty())
 		return;
     ft_split_command(command, args);
-	std::cout << it->second.GetBuffer() << std::endl;
+	// std::cout << it->second.GetBuffer() << std::endl;
 	for (size_t i = 0; i < args[0].length(); i++)
 	{
 		args[0][i] = std::toupper(args[0][i]);

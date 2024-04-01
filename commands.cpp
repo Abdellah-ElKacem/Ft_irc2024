@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/04/01 00:55:08 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/04/01 01:53:37 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,6 +231,8 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 	std::map<std::string, Clients>::iterator recivers_fd;
 	if (memeber == it_channels->second._members_list.end())
 	{
+
+		send_rep(recivers_fd->second.GetFdClient(), ERR_CANNOTSENDTOCHAN(sender->second.GetIpClient(), sender->second.GetNickname(), it_channels->second._ch_name));
 		std::cerr << "Cannot send to channel (+n)" << std::endl;
 		return ;
 	}
