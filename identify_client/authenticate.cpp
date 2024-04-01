@@ -1,12 +1,12 @@
 #include "../Server.hpp"
+// #include "../channel.hpp"
 
 void Server::if_authenticate_client(Clients& client) {
-    std::string cmd, msg, cmd_p, part_cmd, old_nick;
+    std::string cmd, msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     
-    if ( cmd.empty() || cmd == "PONG" || cmd == "QUIT" )
+    if ( cmd.empty() )
         return;
-    cmd_p = cmd;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
     } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
@@ -38,6 +38,8 @@ void Server::if_authenticate_client(Clients& client) {
             return;
         }
         std::map<int, Clients>::iterator it;
+        std::map<std::string, channel>::iterator it_ch;
+        std::vector<std::string>::iterator it_nick;
         for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
             if (it->second.GetNickname() == part_cmd) {
                 msg = ":ircserv_KAI.chat 433 " + part_cmd + " NICK :Nickname is already in use\r\n";
@@ -45,11 +47,36 @@ void Server::if_authenticate_client(Clients& client) {
                 return;
             }
         }
+        // channels -> send to users if bool false -  operators 
         client.setNickname(part_cmd);
-        for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-                msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
-                msg_client(it->second.GetFdClient(), msg);
-        }
+        // msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
+        // msg_client(it->second.GetFdClient(), msg);
+
+        // for (it_ch = _channel_list.begin(); it_ch != _channel_list.end(); it_ch++) {
+        //     it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), old_nick);
+        //     if (it_nick != it_ch->second._members_list.end())
+        //     {
+        //         it_ch->second._members_list.erase(it_nick);
+        //         it_ch->second._members_list.push_back(client.GetNickname());
+        //     }
+        //     it_nick = std::find(it_ch->second._invited_list.begin(), it_ch->second._invited_list.end(), old_nick);
+        //     if (it_nick != it_ch->second._invited_list.end())
+        //     {
+        //         it_ch->second._invited_list.erase(it_nick);
+        //         it_ch->second._invited_list.push_back(client.GetNickname());
+        //     }
+        //     it_nick = std::find(it_ch->second._operetos_list.begin(), it_ch->second._operetos_list.end(), old_nick);
+        //     if (it_nick != it_ch->second._operetos_list.end())
+        //     {
+        //         it_ch->second._operetos_list.erase(it_nick);
+        //         it_ch->second._operetos_list.push_back(client.GetNickname());
+        //     }
+        // }
+        
+        // for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+        //     msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
+        //     msg_client(it->second.GetFdClient(), msg);
+        // }
     }
     return;
 }

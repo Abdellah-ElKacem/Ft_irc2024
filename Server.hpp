@@ -17,10 +17,12 @@
 
 
 #include "Clients.hpp"
+#include "channel.hpp"
 
 class Clients;
 
 #define NUM_OF_CONNECTIONS 10
+class channel;
 
 class Server
 {
@@ -40,7 +42,7 @@ class Server
         std::string _password;
         std::string _the_port;
         std::string _buffer;
-        void bot(Clients&);
+        void bot(Clients&, channel&);
         int accept_func();
         void trim_string();
         int switch_aft(std::string cmd);

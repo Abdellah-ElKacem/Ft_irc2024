@@ -7,6 +7,7 @@
 #include "replays.hpp"
 
 
+class Clients;
 
 class channel
 {
