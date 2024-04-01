@@ -45,7 +45,7 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 {
     std::vector<std::string> args;
 	std::string command = it->second.GetBuffer();
-	std::cout << command << std::endl;
+	// std::cout << command << std::endl;
 	if (command.empty())
 		return;
     ft_split_command(command, args);
@@ -76,3 +76,14 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 	// }
 	// std::cout << "-----------\n";
 }
+// 05:25 <alae> Trying file transfer to test, Screen Shot 2023-12-26 at 8.55.38 AM.png (6550500 bytes) 127.0.0.1:1098
+// 05:25 <test> Received file transfer request from alae, Screen_Shot_2023-12-26_at_8.55.38_AM.png (6550500 bytes) 127.0.0.1:1098
+
+// 05:27 <alae> Trying file transfer to test, Screen Shot 2023-12-26 at 8.55.38 AM.png (6550500 bytes) 127.0.0.1:1099
+// 05:27 <test> Received file transfer request from alae, Screen_Shot_2023-12-26_at_8.55.38_AM.png (6550500 bytes) 127.0.0.1:1099
+
+// Trying file transfer to test, Screen Shot 2023-12-26 at 8.55.38 AM.png (6550500 bytes) 127.0.0.1:1098
+
+
+// Trying file transfer to transfer, image.jpeg (184344 bytes) 197.230.30.146:1097
+// 21:50 Trying file transfer to transfer, Screen Shot 2023-12-26 at 8.55.38 AM.png (6550500 bytes) 197.230.30.146:1096

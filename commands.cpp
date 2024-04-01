@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/31 02:05:08 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/04/01 00:55:08 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,12 +121,12 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 		channel_it = _channel_list.find(args[1]);
 		if (channel_it == _channel_list.end())
 		{
-			send_rep(it->second.GetFdClient(), ERR_NOSUCHCHANNEL(it->second.GetIpClient() , it->second.GetNickname(), args[1]));
+			send_rep(it->second.GetFdClient(), ERR_NOSUCHCHANNEL(server_name , it->second.GetNickname(), args[1]));
 			return ;
 		}
 		else if (!ft_check_list(channel_it->second._members_list, it->second.GetNickname()))
 		{
-			send_rep(it->second.GetFdClient(), ERR_NOTONCHANNEL(it->second.GetIpClient(), args[1]));
+			send_rep(it->second.GetFdClient(), ERR_NOTONCHANNEL(server_name, args[1]));
 			return ;
 		}
 	}
@@ -144,20 +144,18 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 			channel_it->second._topic_name = "";
 		else
 		{
-			std::cout << args.size() << std::endl;
 			if (args.size() == 3 || args[2][0] != ':')
 				channel_it->second._topic_name = args[2];
 			else
 			{
 				ft_extract_long_line(long_line, args);
 				channel_it->second._topic_name = long_line;
-				std::cout << long_line << std::endl;
 			}
 			ft_send_to_all(RPL_SETTOPIC(it->second.GetNickname() ,it->second.GetUsername(), it->second.GetIpClient() ,channel_it->second._ch_name, channel_it->second._topic_name), channel_it);
 		}
 	}
 	else
-        send_rep(it->second.GetFdClient(), ERR_NOTOP(it->second.GetIpClient(), channel_it->second._ch_name));
+        send_rep(it->second.GetFdClient(), ERR_NOTOP(server_name, channel_it->second._ch_name));
 
 	
 }

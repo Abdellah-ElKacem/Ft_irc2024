@@ -1,11 +1,10 @@
 #include "../Server.hpp"
 
 void Server::if_authenticate_client(Clients& client) {
-    std::string cmd, msg, cmd_p, part_cmd, old_nick;
+    std::string cmd, msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     if ( cmd.empty() )
         return;
-    cmd_p = cmd;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
     } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
