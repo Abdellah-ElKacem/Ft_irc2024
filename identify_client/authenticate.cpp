@@ -1,5 +1,5 @@
 #include "../Server.hpp"
-// #include "../channel.hpp"
+#include "../channel.hpp"
 
 void Server::if_authenticate_client(Clients& client) {
     std::string cmd, msg, part_cmd, old_nick;
@@ -16,7 +16,9 @@ void Server::if_authenticate_client(Clients& client) {
     } else if (cmd == "PASS" || cmd == "USER") {
         msg = ":ircserv_KAI.chat 462 " + client.GetNickname() + " :You may not reregister\r\n";
         msg_client(client.GetFdClient(), msg);
-    } else if (cmd == "NICK") {
+    }
+    else if (cmd == "NICK")
+    {
         old_nick = client.GetNickname();
         if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
             part_cmd = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
@@ -32,7 +34,8 @@ void Server::if_authenticate_client(Clients& client) {
         }
         else
             part_cmd = "";
-        if (part_cmd.empty()) {
+        if (part_cmd.empty())
+        {
             msg = ":ircserv_KAI.chat 431 " + client.GetNickname() + " NICK :No nickname given\r\n";
             msg_client(client.GetFdClient(),msg);
             return;
@@ -59,10 +62,22 @@ void Server::if_authenticate_client(Clients& client) {
         }
         std::map<std::string, channel>::iterator it_ch;
         std::vector<std::string>::iterator it_nick;
+        int idx;
         for (it_ch = _channel_list.begin(); it_ch != _channel_list.end(); it_ch++) {
             it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), old_nick);
             if (it_nick != it_ch->second._members_list.end()) {
-                if ()
+                idx =  it_nick - it_ch->second._members_list.begin();
+                it_ch->second._members_list[idx] = client.GetNickname();
+            }
+            it_nick = std::find(it_ch->second._invited_list.begin(), it_ch->second._invited_list.end(), old_nick);
+            if (it_nick != it_ch->second._invited_list.end()) {
+                idx =  it_nick - it_ch->second._invited_list.begin();
+                it_ch->second._invited_list[idx] = client.GetNickname();
+            }
+            it_nick = std::find(it_ch->second._operetos_list.begin(), it_ch->second._operetos_list.end(), old_nick);
+            if (it_nick != it_ch->second._operetos_list.end()) {
+                idx =  it_nick - it_ch->second._operetos_list.begin();
+                it_ch->second._operetos_list[idx] = client.GetNickname();
             }
 
         }
