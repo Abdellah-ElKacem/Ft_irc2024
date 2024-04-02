@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/04/02 00:47:21 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/04/02 01:38:41 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,15 @@ bool ft_check_client(std::vector<std::string>& args)
 	return true;
 }
 
+
+bool ft_find_clients(std::string& nick)
+{
+	std::map<std::string, Clients>::iterator it;
+    it = nick_clients.find(nick);
+    if (it == nick_clients.end())
+        return false;
+    return true;
+}
 
 void ft_extract_long_line(std::string& line, std::vector<std::string>& args, size_t idx)
 {
@@ -176,13 +185,15 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	channel_it = _channel_list.find(args[1]);
 	if (channel_it == _channel_list.end())
 		send_rep(it->second.GetFdClient(),ERR_NOSUCHCHANNEL(server_name, it->second.GetNickname(), args[1]));
+	else if (!ft_find_clients(args[2]))
+		send_rep(it->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, it->second.GetNickname()));
 	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
 		send_rep(it->second.GetFdClient(), ERR_CHANOPRIVSNEEDED(server_name, it->second.GetNickname(), channel_it->second._ch_name));
 	else
 	{
 		if (!ft_check_list(channel_it->second._members_list, args[2]))
 		{
-			send_rep(it->second.GetFdClient(),ERR_NO_NICK_CHNL(server_name, args[2]));
+			send_rep(it->second.GetFdClient(),ERR_USERNOTINCHANNEL(server_name, it->second.GetNickname(), args[2], channel_it->second._ch_name));
 			return ;
 		}
 		if (args.size() >= 4)
@@ -285,7 +296,7 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 		
 		if (it_channels == _channel_list.end() &&  it_clients == nick_clients.end())
 			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i]));
-		else if (ft_check_list(dup, senders[i]))
+		else if (!ft_check_list(dup, senders[i]))
 		{
 			if (senders[i][0] == '#')
 				msg_chennel(it_channels, message, sender);
