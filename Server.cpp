@@ -38,7 +38,6 @@ std::string Server::getPassword() const {
     return _password;
 }
 
-
 int Server::accept_func()
 {
     std::string ip_client;

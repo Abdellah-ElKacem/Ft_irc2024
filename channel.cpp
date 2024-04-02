@@ -12,7 +12,6 @@ void trim(std::string& str)
 		last = str.length() -1;
 	if (bigen == std::string::npos)
 		bigen = 0;
-	// exit(0);
 	str =  str.substr(bigen , (last - bigen + 1));
 }
 

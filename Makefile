@@ -10,7 +10,7 @@ SRC = main.cpp Server.cpp Clients.cpp identify_client/authenticate.cpp identify_
 
 OBJ = $(SRC:.cpp=.o)
 
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g #-fsanitize=address
 
 CPP = c++
 
