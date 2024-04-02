@@ -6,20 +6,11 @@
 #include "Clients.hpp"
 #include "replays.hpp"
 
-// #define ERR_NEEDMOREPARAMS(hostname, nick, cmd) hostname + " 461 " + nick + " " + cmd + " :Not enough parameters\r\n"
-#define ERR_NOT_ON_CHANNEL(hostname, nick, _channel) hostname + " 442 " + " " + nick + " " _channel + " :You're not on that channel\r\n"
-#define ERR_NOT_OPERATOR(hostname, nick, _channel) hostname + " 482 " + nick + " " + _channel + " :You're not a channel operator\r\n"
-#define NO_SUCH_CHANNEL(nick, _channel) ":ircserv_KAI.chat 403 " + nick + " " + _channel +  + " :No such channel\r\n"
-#define RPL_NO_TOPIC_SET(hostname, nick, _channel) hostname + " 331 " + nick + " " + _channel + " :No topic is set\r\n"
-#define RPL_TOPIC_VALUE(hostname, nick, _channel, topic) hostname + " 332 " + nick + " " + _channel + " :" + topic + "\r\n"
-// #define RPL_TOPIC_SET(hostname, nick, _channel, topic, cmd) hostname + " 332 " + nick + " " + _channel + " :" + topic + "\r\n"
-
 
 
 class channel
 {
     public:
-
         std::string _ch_name;
         std::string _topic_name;
         std::string _pass;
@@ -52,6 +43,8 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
 void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c, std::string name_ch);
 void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>::iterator it, std::vector<std::string> pass_wd, int i);
 void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>& _channel_list, std::string channel_mane);
-void send_rep_i(int fd, std::string msg);
+void send_rep(int fd, std::string msg);
+
+extern std::string server_name;
 void ft_send_to_all(std::string msg, channels it);
 void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list);

@@ -38,11 +38,6 @@ std::string Server::getPassword() const {
     return _password;
 }
 
-//----------------------> MSGRPLFORMAT [":<NCIKNAME>!~<REALNAME>@<HOSTNAME> <CMD> <TARGET> :<MSG>"]
-
-// ERRORREPLYFORMAT [":<ServerName> <StatusCode> <CLientNick> :<Msg>"]
-
-
 int Server::accept_func()
 {
     std::string ip_client;
@@ -92,6 +87,7 @@ void Server::init__and_run()
 
     // non non blocking
     fcntl(_server_sock, F_SETFL, O_NONBLOCK);
+    const size_t Max_size_buff = 512;
     while(1)
     {
         int status = poll(_fds.data(),_fds.size(), -1);
@@ -108,15 +104,20 @@ void Server::init__and_run()
                 } else {
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
-                    ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) , 0);
+                    ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) - 1 , 0);
                     _buffer = buff;
-                    if (recvv == -1) {
-                        std::cout << "failed recv\n";
+                    if (_buffer.size() > Max_size_buff) {
+                        _buffer.clear();
+                        break;
                     }
-                    if (recvv == 0) {
+                    if (recvv == 0 || _buffer.substr(0, 4) == "QUIT") {
                         std::cout << "client disconnected\n";
                         close(_fds[i].fd);
                         _fds.erase(_fds.begin() + i);
+                        continue;
+                    }
+                    if (recvv == -1) {
+                        std::cout << "failed recv\n";
                         continue;
                     }
                     if (recvv) {
@@ -124,23 +125,29 @@ void Server::init__and_run()
                         it->second.SetBoolOk(false);
                         it->second.SetBoolNewline(false);
                         it->second.SetBuffer_tmp(_buffer);
+                        if (it->second.GetBuffer_tmp().size() > Max_size_buff) {
+                            it->second.GetBuffer_tmp().clear();
+                            break;
+                        }
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            // std::cout << "buff : [" << it->second.GetBuffer() << "]" << std::endl;
+                            std::cout << it->second.GetBuffer() << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);
-                                else
-                                {
-                                    if_authenticate_client(it->second);
-                                    check_cmd(it);
+                                else {
+                                    // if (it->second.GetBuffer() == "/help") {
+                                    //     std::cout << "geeee\n";
+                                    //     bot(it->second);
+                                    // } else {
+                                        if_authenticate_client(it->second);
+                                        check_cmd(it);
+                                    // }
                                 }
                             }
-                            if (it->second.GetBoolNewline() == true)
-                                it->second.Buff_clear();
                         }
-                        if (it->second.GetBoolNewline() == false)
+                        if (it->second.GetBoolNewline() == true)
                             it->second.Buff_clear();
                     }
                 }

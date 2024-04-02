@@ -104,7 +104,6 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
     buffer.push_back('t');
     _channel_list.insert(std::make_pair(name_ch, obj));
 
-    // std::cout << it_c->first << " - " << it_c->second.GetFdClient() << '\n';
     send_rep(it_c->first, RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), name_ch,it_c->second.GetIpClient()));
     send_rep(it_c->first, RPL_MODEIS(name_ch, name_srv, buffer));
     send_rep(it_c->first, RPL_NAMREPLY(name_srv, "@" + it_c->second.GetNickname(), name_ch, it_c->second.GetNickname()));
@@ -195,6 +194,7 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 // ------------------------------------ modes -----------------------------------------//
 // ------------------------------------------------------------------------------------//
 
+//------- (k) ---------//
 void handl_k(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
 {
     it_ch->second._is_locked = true;
@@ -210,6 +210,7 @@ void handl_k_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Cli
     send_rep(it_c->first, RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
 }
 
+//------- (o) ---------//
 void handl_o(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
 {
     std::vector<std::string>::iterator find_it = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), arg);
@@ -229,6 +230,64 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg, 
     if (find_it != it_ch->second._operetos_list.end())
         it_ch->second._operetos_list.erase(find_it);
     send_rep(it_c->first, RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-o", it_c->second.GetUsername()));
+}
+
+//------- (l) ---------//
+void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._limit_members == true)
+    {
+        it_ch->second._limit_members = true;
+        it_ch->second._limit_nb = std::atoi(arg.c_str());
+        ft_send_to_all(RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+l", arg, it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_l_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._limit_members == false)
+    {
+        it_ch->second._is_locked = false;
+        ft_send_to_all(RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+//------- (i) ---------//
+void handl_i(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_invited != true)
+    {
+        it_ch->second._is_invited = true;
+        ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+i", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_i_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_invited != false)
+    {
+        it_ch->second._is_invited = false;
+        ft_send_to_all(RPL_DELMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-i", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+//------- (t) ---------//
+void handl_t(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_topiced != true)
+    {
+        it_ch->second._is_topiced = true;
+        ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+t", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_t_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_topiced != false)
+    {
+        it_ch->second._is_topiced = false;
+        ft_send_to_all(RPL_DELMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-t", it_c->second.GetUsername()), it_ch);
+    }
 }
 
 // ------------------------------------------------------------------------------------//
@@ -297,9 +356,41 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                         handl_o_m(it_ch, args[z - 1], it_c);
                     z++;
                 }
+                if (modes[i][j] == 't')
+                {
+                    if (sign)
+                        handl_t(it_ch, it_c);
+                    else
+                        handl_t_m(it_ch, it_c);
+                    z++;
+                }
+                if (modes[i][j] == 'l')
+                {
+                    if (sign)
+                    {
+                        if (z <= args.size())
+                            handl_l(it_ch, args[z - 1], it_c);
+                    }
+                    else
+                        handl_l_m(it_ch, it_c);
+                    z++;
+                }
+                // if (modes[i][j] == 'i')
+                // {
+                //     if (sign)
+                //     {
+                //         if (z <= args.size())
+                //             handl_i(it_ch, args[z - 1], it_c);
+                //     }
+                //     else
+                //         handl_i_m(it_ch, args[z - 1], it_c);
+                //     z++;
+                // }
             }
         }
     }
+    else
+        send_rep(it_c->first, ERR_NOSUCHCHANNEL(server_name, it_c->second.GetNickname(), ch_name));
 }
 
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c)

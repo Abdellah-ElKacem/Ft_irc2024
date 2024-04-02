@@ -81,7 +81,9 @@ bool Clients::GetBoolOk() const {
 }
 
 void Clients::check_new_line() {
+
     size_t idx = _buffer_cl.find('\n');
+
     if (idx != _buffer_cl.npos) {
         _buffer_cl_final += _buffer_cl.substr(0, idx);
         _buffer_cl = _buffer_cl.substr(idx + 1);
