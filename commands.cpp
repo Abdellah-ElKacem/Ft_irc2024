@@ -6,7 +6,7 @@
 /*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/31 03:25:15 by ael-kace         ###   ########.fr       */
+/*   Updated: 2024/04/03 15:22:56 by ael-kace         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,25 @@ void ft_send_to_all(std::string msg, channels it)
 	}
 	
 }
+
+void ft_send_to_all1(std::string msg, channels it)
+{
+	std::map<std::string, Clients>::iterator it_clients;
+
+	for (size_t i = 0; i < it->second._members_list.size(); i++)
+	{
+		it_clients = nick_clients.find(it->second._members_list[i]);
+		if ( it_clients != nick_clients.end() ) {
+			if ( it_clients->second.GetBoolKnow() == false) {
+				send_rep(it_clients->second.GetFdClient(), msg);
+				it_clients->second.SetBoolKnow(true);
+			}
+		}
+	}
+    // for(it_clients = nick_clients.begin(); it_clients != nick_clients.end(); it_clients++)
+    //     std::cout << "between : "<< std::boolalpha << it_clients->second.GetBoolKnow() << std::endl;
+}
+
 
 void ft_handle_topic(client& it, std::vector<std::string> &args)
 {

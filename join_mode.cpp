@@ -97,6 +97,8 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
     channel obj(name_ch);
     obj._operetos_list.push_back(it_c->second.GetNickname());
     obj._members_list.push_back(it_c->second.GetNickname());
+    obj._members_list1[it_c->second.GetNickname()] = it_c->second.GetFdClient();
+    // obj._members_list1.push_back(std::make_pair(it_c->second.GetNickname(), std::make_pair(it_c->second.GetNickname(), it_c->second.GetBoolKnow()));
     obj._limit_nb++;
     buffer.push_back('+');
     buffer.push_back('t');
@@ -153,6 +155,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
             }
         }
         it->second._members_list.push_back(it_c->second.GetNickname());
+        it->second._members_list1[it_c->second.GetNickname()] = it_c->second.GetFdClient();
         it->second._limit_nb++;
         ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first,it_c->second.GetIpClient()), it);
         send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));

@@ -73,6 +73,10 @@ void Server::init__and_run()
         std::perror("setsockopt(SO_REUSEADDR) failed");
         exit(EXIT_FAILURE);
     }
+    if (setsockopt(_server_sock, SOL_SOCKET, SO_NOSIGPIPE, &ok, sizeof(int)) < 0) {
+        std::perror("setsockopt(SO_REUSEADDR) failed");
+        exit(EXIT_FAILURE);
+    }
     if (bind(_server_sock, (sockaddr*)&__serv_addr, sizeof(__serv_addr)) == -1) {
         std::perror("Error Bind");
         exit(EXIT_FAILURE);
@@ -84,7 +88,7 @@ void Server::init__and_run()
 
 	_fds.push_back(add_to_poll(_server_sock));
 
-    std::map<int, Clients>::iterator it;
+    std::map<int, Clients>::iterator it, it1;
 
     // non non blocking
     fcntl(_server_sock, F_SETFL, O_NONBLOCK);
@@ -109,7 +113,10 @@ void Server::init__and_run()
                     _buffer = buff;
                     if (_buffer.size() > Max_size_buff) {
                         _buffer.clear();
-                        break;
+                        it = map_of_clients.find(_fds[i].fd);
+                        std::string msg = ":ircserv_KAI.chat 417 " + it->second.GetNickname() + " :Input line was too long\r\n";
+                        msg_client(_fds[i].fd,msg);
+                        continue;
                     }
                     if (recvv == 0 || _buffer.substr(0, 4) == "QUIT") {
                         std::cout << "client disconnected\n";
@@ -133,11 +140,12 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            std::cout << it->second.GetBuffer() << std::endl;
+                            // std::cout << '['<< it->second.GetBuffer()<< ']' << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second);
                                 else {
+
                                     // if (it->second.GetBuffer() == "/help") {
                                     //     std::cout << "geeee\n";
                                     //     bot(it->second);

@@ -43,6 +43,8 @@ void Server::register_client(Clients& client) {
             if ( part1 == "NICK" ) {
                 if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
                     part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
+                    if (part2.back() == ':')
+                        part2.pop_back();
                     if(!parce_nick(part2)) {
                         msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickname\r\n";
                         msg_client(client.GetFdClient(),msg);
