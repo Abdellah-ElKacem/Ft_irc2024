@@ -49,5 +49,4 @@ void send_rep(int fd, std::string msg);
 
 extern std::string server_name;
 void ft_send_to_all(std::string msg, channels it);
-void ft_send_to_all1(std::string msg, channels it);
 void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list);

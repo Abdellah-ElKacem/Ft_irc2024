@@ -48,23 +48,17 @@ void Server::if_authenticate_client(Clients& client) {
                 return;
             }
         }
-        // channels -> send to users if bool false -  operators 
-        client.setNickname(part_cmd);
-        // for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
-        //     if (it->second.GetNickname() == part_cmd) {
-                msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
-        //         msg_client(it->second.GetFdClient(), msg);
-        //         it->second.SetBoolKnow(true);
-        //     }
-        // }
         std::map<std::string, channel>::iterator it_ch;
         std::vector<std::string>::iterator it_nick;
         std::map<std::string, Clients>::iterator it_cl;
 
-
         std::map<std::string, int> add_to_print;
-        std::map<std::string, int>::iterator add_to_print1;
-        std::map<std::string, int>::iterator key_t_print;
+        std::map<std::string, int>::iterator add_to_print1, key_t_print;
+
+        client.setNickname(part_cmd);
+        add_to_print.insert(std::make_pair(client.GetNickname(), client.GetFdClient()));
+
+
         for (it_ch = _channel_list.begin(); it_ch != _channel_list.end(); it_ch++) {
             it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), old_nick);
             if (it_nick != it_ch->second._members_list.end()) {
@@ -94,14 +88,10 @@ void Server::if_authenticate_client(Clients& client) {
                     add_to_print[key_t_print->first] = key_t_print->second;
             }
         }
-        // if (add_to_print.empty()) {
-        //     std::cout << "asasas\n";
-        //     msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
-        //     msg_client(it->second.GetFdClient(), msg);
-        //     return;
-        // }
-        for (add_to_print1 = add_to_print.begin(); add_to_print1 != add_to_print.end(); add_to_print1++)
+        msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
+        for (add_to_print1 = add_to_print.begin(); add_to_print1 != add_to_print.end(); add_to_print1++) {
             msg_client(add_to_print1->second, msg);
+        }
     }
     return;
 }
