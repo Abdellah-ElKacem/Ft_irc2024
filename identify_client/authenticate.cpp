@@ -1,7 +1,7 @@
 #include "../Server.hpp"
 #include "../channel.hpp"
 
-void Server::if_authenticate_client(Clients& client) {
+void Server::if_authenticate_client(Clients& client, std::map<std::string, channel>& _channel_list) {
     std::string cmd, msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     std::map<int, Clients>::iterator it;
@@ -51,12 +51,16 @@ void Server::if_authenticate_client(Clients& client) {
         std::map<std::string, channel>::iterator it_ch;
         std::vector<std::string>::iterator it_nick;
         std::map<std::string, Clients>::iterator it_cl;
-        //in
 
         std::map<std::string, int> add_to_print;
         std::map<std::string, int>::iterator add_to_print1, key_t_print;
 
         client.setNickname(part_cmd);
+        it_cl = nick_clients.find(old_nick);
+        if (it_cl != nick_clients.end()) {
+            nick_clients.erase(it_cl);
+            nick_clients.insert(std::make_pair(part_cmd, client));
+        }
         add_to_print.insert(std::make_pair(client.GetNickname(), client.GetFdClient()));
 
 

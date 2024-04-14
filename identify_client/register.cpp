@@ -1,6 +1,6 @@
 #include "../Server.hpp"
 
-void Server::register_client(Clients& client) {
+void Server::register_client(Clients& client ,std::string &str_m ,std::string &str_d ,std::string &str_y ,std::string &str_h ,std::string &str_mi ,std::string &str_s) {
 
     std::string part1, part2, part5 = "", msg;
     std::string after_regis[6] = {"JOIN", "KICK", "INVITE", "TOPIC", "MODE", "PRIVMSG"};
@@ -93,30 +93,11 @@ void Server::register_client(Clients& client) {
                 client.SetBoolUsername(true);
             }
             if (client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true) {
-                std::ostringstream to_str1, to_str2, to_str3, to_str4, to_str5, to_str6;
-                std::string str_y, str_m, str_d, str_h, str_mi, str_s;
                 msg = ":ircserv_KAI.chat 001 " + client.GetNickname() + " :Welcome to the KAI_IRC Network, " + client.GetNickname() + " \r\n";                
                 msg_client(client.GetFdClient(), msg);
                 msg = ":ircserv_KAI.chat 002 " + client.GetNickname() + " :Your host is ircserv_KAI.chat, running version Vol:°01.. ©™ \r\n";
                 msg_client(client.GetFdClient(), msg);
 
-                time_t now = time(0);
-                tm *local_time = localtime(&now);
-
-                int year = 1900 + local_time->tm_year, month = 1 + local_time->tm_mon , day = local_time->tm_mday;
-                int hour = local_time->tm_hour, minute = local_time->tm_min, second = local_time->tm_sec;
-                to_str1 << year;
-                str_y = to_str1.str();
-                to_str2 << month;
-                str_m = to_str2.str();
-                to_str3 << day;
-                str_d = to_str3.str();
-                to_str4 << hour;
-                str_h = to_str4.str();
-                to_str5 << minute;
-                str_mi = to_str5.str();
-                to_str6 << second;
-                str_s = to_str6.str();
                 msg = ":ircserv_KAI.chat 003 " + client.GetNickname() + " :This server was created " + str_m + '/' + str_d + "/" + str_y + " at " + str_h + ':' + str_mi + ':' + str_s + " GMT \r\n";
                 msg_client(client.GetFdClient(), msg);
                 client.SetBoolIdentify(true);
@@ -124,4 +105,26 @@ void Server::register_client(Clients& client) {
             }
         }
     }
+}
+
+void Server::time_server(std::string &str_m ,std::string &str_d ,std::string &str_y ,std::string &str_h ,std::string &str_mi ,std::string &str_s) {
+    std::ostringstream to_str1, to_str2, to_str3, to_str4, to_str5, to_str6;
+
+    time_t now = time(0);
+    tm *local_time = localtime(&now);
+
+    int year = 1900 + local_time->tm_year, month = 1 + local_time->tm_mon , day = local_time->tm_mday;
+    int hour = local_time->tm_hour, minute = local_time->tm_min, second = local_time->tm_sec;
+    to_str1 << year;
+    str_y = to_str1.str();
+    to_str2 << month;
+    str_m = to_str2.str();
+    to_str3 << day;
+    str_d = to_str3.str();
+    to_str4 << hour;
+    str_h = to_str4.str();
+    to_str5 << minute;
+    str_mi = to_str5.str();
+    to_str6 << second;
+    str_s = to_str6.str();
 }

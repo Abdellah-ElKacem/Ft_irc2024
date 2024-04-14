@@ -1,8 +1,7 @@
 #include "channel.hpp"
 
 std::string name_srv = "ircserv_KAI.chat";
-channel::channel()
-{}
+channel::channel() {}
 
 channel::channel(std::string ch_name)
 {
@@ -98,7 +97,6 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
     obj._operetos_list.push_back(it_c->second.GetNickname());
     obj._members_list.push_back(it_c->second.GetNickname());
     obj._members_list1[it_c->second.GetNickname()] = it_c->second.GetFdClient();
-    // obj._members_list1.push_back(std::make_pair(it_c->second.GetNickname(), std::make_pair(it_c->second.GetNickname(), it_c->second.GetBoolKnow()));
     obj._limit_nb++;
     buffer.push_back('+');
     buffer.push_back('t');
