@@ -62,6 +62,47 @@ int Server::accept_func()
     return 0;
 }
 
+void Server::delete_client_for_all(int i) {
+    std::string nick_;
+    std::map<int, Clients>::iterator it;
+    std::map<std::string, Clients>::iterator it1;
+    std::map<std::string, int>::iterator key_t_print;
+    std::map<std::string, channel>::iterator it2;
+    std::vector<std::string>::iterator it_nick;
+
+    it = map_of_clients.find(_fds[i].fd);
+    if (it != map_of_clients.end()) {
+        nick_ = it->second.GetNickname();
+        map_of_clients.erase(it);
+    }
+
+    it1 = nick_clients.find(nick_);
+    if (it1 != nick_clients.end())
+        nick_clients.erase(it1);
+
+    for (it2 = _channel_list.begin(); it2 != _channel_list.end(); it2++) {
+        it_nick = std::find(it2->second._members_list.begin(), it2->second._members_list.end(), nick_);
+        if (it_nick != it2->second._members_list.end()) {
+            it2->second._members_list.erase(it_nick);
+        }
+        it_nick = std::find(it2->second._invited_list.begin(), it2->second._invited_list.end(), nick_);
+        if (it_nick != it2->second._invited_list.end()) {
+            it2->second._invited_list.erase(it_nick);
+        }
+        it_nick = std::find(it2->second._operetos_list.begin(), it2->second._operetos_list.end(), nick_);
+        if (it_nick != it2->second._operetos_list.end()) {
+            it2->second._operetos_list.erase(it_nick);
+        }
+        key_t_print = it2->second._members_list1.find(nick_);
+        if (key_t_print != it2->second._members_list1.end()) {
+            it2->second._members_list1.erase(key_t_print);
+        }
+    }
+    close(_fds[i].fd);
+    _fds.erase(_fds.begin() + i);
+
+}
+
 void Server::init__and_run()
 {
     int ok = 1;
@@ -84,11 +125,11 @@ void Server::init__and_run()
 
 	_fds.push_back(add_to_poll(_server_sock));
 
-    std::map<int, Clients>::iterator it, it1;
+    std::map<int, Clients>::iterator it;
     std::string str_y, str_m, str_d, str_h, str_mi, str_s;
     time_server(str_y, str_m, str_d, str_h, str_mi, str_s);
 
-    // non non blocking
+    // non blocking
     fcntl(_server_sock, F_SETFL, O_NONBLOCK);
     const size_t Max_size_buff = 512;
     while(1)
@@ -115,18 +156,14 @@ void Server::init__and_run()
                         std::string msg = ":ircserv_KAI.chat 417 " + it->second.GetNickname() + " :Input line was too long\r\n";
                         msg_client(_fds[i].fd,msg);
                         continue;
-                    }
-                    if (recvv == 0 || _buffer.substr(0, 4) == "QUIT") {
+                    } if (recvv == 0 || _buffer.substr(0, 4) == "QUIT") {
+                        delete_client_for_all(i);
                         std::cout << "client disconnected\n";
-                        close(_fds[i].fd);
-                        _fds.erase(_fds.begin() + i);
                         continue;
-                    }
-                    if (recvv == -1) {
+                    } if (recvv == -1) {
                         std::cout << "failed recv\n";
                         continue;
-                    }
-                    if (recvv) {
+                    } if (recvv) {
                         it = map_of_clients.find(_fds[i].fd);
                         it->second.SetBoolOk(false);
                         it->second.SetBoolNewline(false);

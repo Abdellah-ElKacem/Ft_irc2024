@@ -22,7 +22,6 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
                 part2 = "";
             if (part2.c_str()[0] == ':')
                 part2.erase(0, 1);
-            // std::cout << part2 << std::endl;
             if (part2.empty()) {
                 msg = ":ircserv_KAI.chat 461 " + client.GetNickname() + " PASS :Not enough parameters\r\n";
                 msg_client(client.GetFdClient(),msg);
@@ -35,12 +34,11 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
             client.SetBoolPassword(true);
             return;
         } else if ( client.GetBoolPassword() == true ) {
-            // if (part1 == "PASS" && client.GetBoolPassword() == true) {
-            //         msg = ":ircserv_KAI.chat -1 " + client.GetNickname() + " PASS :You are already put the password\r\n";
-            //     msg_client(client.GetFdClient(),msg);
-            //     return;
-            // }
-            if ( part1 == "NICK" ) {
+            if (part1 == "PASS" && client.GetBoolPassword() == true) {
+                    msg = ":ircserv_KAI.chat * " + client.GetNickname() + " PASS :You are already put the password\r\n";
+                msg_client(client.GetFdClient(),msg);
+                return;
+            } if ( part1 == "NICK" ) {
                 if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
                     part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
                     if (part2.back() == ':')

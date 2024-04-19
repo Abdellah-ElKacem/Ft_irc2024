@@ -12,18 +12,18 @@ class Clients;
 class channel
 {
     public:
-        std::string _ch_name;
-        std::string _topic_name;
-        std::string _pass;
-        std::map<std::string, int> _members_list1;
-        std::vector<std::string> _members_list;
-        std::vector<std::string> _invited_list;
-        std::vector<std::string> _operetos_list;
-        unsigned long       _limit_nb;
-        bool                _is_invited;
-        bool                _is_topiced;
-        bool                _is_locked;
-        bool                _limit_members;
+        std::string                 _ch_name;
+        std::string                 _topic_name;
+        std::string                 _pass;
+        std::map<std::string, int>  _members_list1;
+        std::vector<std::string>    _members_list;
+        std::vector<std::string>    _invited_list;
+        std::vector<std::string>    _operetos_list;
+        unsigned long               _limit_nb;
+        bool                        _is_invited;
+        bool                        _is_topiced;
+        bool                        _is_locked;
+        bool                        _limit_members;
 
         channel();
         channel(std::string ch_name);
@@ -31,9 +31,9 @@ class channel
 };
 
 // typdefinition
-    typedef std::map<std::string, channel>::iterator channels;
-    typedef std::map<int ,Clients>::iterator client;
-    typedef std::vector<std::string>::iterator vector_it;
+    typedef std::map<std::string, channel>::iterator    channels;
+    typedef std::map<int ,Clients>::iterator            client;
+    typedef std::vector<std::string>::iterator          vector_it;
 
 
 extern std::map<std::string, channel> _channel_list;
@@ -47,6 +47,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
 void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>& _channel_list, std::string channel_mane);
 void send_rep(int fd, std::string msg);
 
-extern std::string server_name;
 void ft_send_to_all(std::string msg, channels it);
 void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list);
+
+extern std::string server_name;
