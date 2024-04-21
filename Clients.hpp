@@ -5,7 +5,7 @@
 class Clients
 {
     private:
-        int _fd_of_client;
+        int         _fd_of_client;
         std::string _ip_client;
         std::string _nick_name;
         std::string _user_name;
@@ -13,24 +13,24 @@ class Clients
         std::string _buffer_cl;
         std::string _buffer_cl_final;
 
-        bool __Password_;
-        bool __NickName_;
-        bool __UserName_;
-        bool __identify_;
-        bool __newline_;
-        bool __buff_ok_;
+        bool    __Password_;
+        bool    __NickName_;
+        bool    __UserName_;
+        bool    __identify_;
+        bool    __newline_;
+        bool    __buff_ok_;
+        bool    __he_know_;
 
     public:
         Clients(){}
         Clients(int fd, std::string ip_client);
         ~Clients(){}
         std::string GetNickname() const;
-        std::string& GetNicknameref() ;
         std::string GetUsername() const;
         std::string GetRealname() const;
         std::string GetBuffer() const;
         std::string GetBuffer_tmp() const;
-        int GetFdClient() const;
+        int         GetFdClient() const;
         std::string GetIpClient() const;
 
         void setNickname(std::string nick);
@@ -46,6 +46,7 @@ class Clients
         void SetBoolIdentify(bool);
         void SetBoolNewline(bool);
         void SetBoolOk(bool);
+        void SetBoolKnow(bool);
 
         bool GetBoolPassword() const;
         bool GetBoolNickname() const;
@@ -53,6 +54,7 @@ class Clients
         bool GetBoolIdentify() const;
         bool GetBoolNewline() const;
         bool GetBoolOk() const;
+        bool GetBoolKnow() const;
 
         void check_new_line();
         void trim_string();
