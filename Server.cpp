@@ -103,6 +103,14 @@ void Server::delete_client_for_all(int i) {
 
 }
 
+bool has_only_space(std::string str) {
+    for (size_t i = 0; i < str.size(); i++) {
+        if (!std::isspace(str.c_str()[i]))
+            return false;
+    }
+    return true;
+}
+
 void Server::init__and_run()
 {
     int ok = 1;
@@ -160,8 +168,9 @@ void Server::init__and_run()
                         delete_client_for_all(i);
                         std::cout << "client disconnected\n";
                         continue;
-                    } if (recvv == -1) {
-                        std::cout << "failed recv\n";
+                    } if (recvv == -1 || has_only_space(_buffer) == true) {
+                        if (recvv == -1)
+                            std::cout << "failed recv\n";
                         continue;
                     } if (recvv) {
                         it = map_of_clients.find(_fds[i].fd);
@@ -175,7 +184,7 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            // std::cout << '['<< it->second.GetBuffer()<< ']' << std::endl;
+                            std::cout << '['<< it->second.GetBuffer()<< ']' << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
