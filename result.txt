@@ -1,0 +1,17 @@
+{"usual_full_name"    :"Alae Eddine En Naas"
+,
+"location"    :"e1r6p11"
+,
+"cursus"     :[{"42cursus":{"level":5.8100000000000005}}
+,
+{"C Piscine"    :{"level":7.31}}
+,
+{"42 events"    :{"level":0.0}}]
+,
+"login"    :"aen-naas"
+,
+"email"    :"aen-naas@student.1337.ma"
+,
+"full_name"    :"Alae Eddine En Naas"
+,
+"image":{"link":"https://cdn.intra.42.fr/users/e2232325c632c4f4a3bd6785cc444d2e/aen-naas.jpg","versions":{"large":"https://cdn.intra.42.fr/users/99ec74eba696cf1f3b16ae77b3549ec5/large_aen-naas.jpg","medium":"https://cdn.intra.42.fr/users/6ba938487f8825a85464ea3fe8bb9a1f/medium_aen-naas.jpg","small":"https://cdn.intra.42.fr/users/284769a9bffb85bfeeafd4d72274e4e6/small_aen-naas.jpg","micro":"https://cdn.intra.42.fr/users/fbece4d5774ea19edd43ed5953b0882c/micro_aen-naas.jpg"}},"groups":[]}

@@ -6,7 +6,7 @@
 /*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/04/03 15:22:56 by ael-kace         ###   ########.fr       */
+/*   Updated: 2024/04/25 18:59:49 by ael-kace         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void ft_extract_long_line(std::string& line, std::vector<std::string>& args)
 				j++;
 			line.push_back(args[i][j]);
 		}
-		if (i < args.size())
+		if (i < args.size() - 1)
 			line.push_back(' ');
 	}
 }

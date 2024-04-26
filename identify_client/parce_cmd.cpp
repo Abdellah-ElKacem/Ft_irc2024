@@ -11,7 +11,8 @@ bool Server::parce_nick(std::string &part2) {
     return true;    
 }
 
-int Server::switch_aft(std::string cmd) {
+int Server::switch_aft(std::string cmd)
+{
     if(!std::strcmp(cmd.c_str(), "JOIN"))
         return 0;
     if(!std::strcmp(cmd.c_str(), "KICK"))

@@ -34,16 +34,17 @@ class Server
         std::string getPassword() const;
 
         void init__and_run();
+        void    bot(Clients &it);
     private :
         std::vector<pollfd> _fds;
         struct sockaddr_in  __serv_addr, __clients;
         int                 _server_sock;
         int                 _port;
+        int                 _bot_fd;
         std::string         _password;
         std::string         _the_port;
         std::string         _buffer;
 
-        void    bot(Clients&, channel&);
         int     accept_func();
         void    trim_string();
         void    delete_client_for_all(int);
@@ -55,6 +56,8 @@ class Server
         void    register_client(Clients& client ,std::string &str_m ,std::string &str_d ,std::string &str_y ,std::string &str_h ,std::string &str_mi ,std::string &str_s);
         void    time_server(std::string &str_m ,std::string &str_d ,std::string &str_y ,std::string &str_h ,std::string &str_mi ,std::string &str_s);
         bool    parce_nick(std::string&);
+        int     is_bot(std::map<int, Clients>::iterator&);
+        int     repl_bot(std::map<int, Clients>::iterator&);
 };
 
 

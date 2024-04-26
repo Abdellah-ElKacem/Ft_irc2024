@@ -16,6 +16,7 @@ Server::Server(const std::string port, const std::string password)
     _port = std::atol(port.c_str());
     _the_port = port;
     _password = password;
+    _bot_fd = -1;
     __serv_addr.sin_family = AF_INET;
     __serv_addr.sin_port = htons(_port);
     __serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -43,12 +44,13 @@ int Server::accept_func()
     std::string ip_client;
     socklen_t addrlen = sizeof(struct sockaddr);
     int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
+    std::cout << "fd_client : " << client_fd << '\n';
     if (client_fd == -1) {
         if (errno != EWOULDBLOCK)
             std::perror("Accept");
         return 1;
     }
-    welcome_client(client_fd);
+    // welcome_client(client_fd);
     ip_client = inet_ntoa(__clients.sin_addr);
     if (!ip_client.c_str()) {
         std::cerr << "inet_ntoa failed.\n";
@@ -57,7 +59,8 @@ int Server::accept_func()
 	_fds.push_back(add_to_poll(client_fd));
     Clients client(client_fd, ip_client);
     map_of_clients[client.GetFdClient()] = client;
-    std::cout << "a client connected\n";
+    // if (_bot_fd == -1)
+        std::cout << "a client connected\n";
     return 0;
 }
 
@@ -108,6 +111,35 @@ bool has_only_space(std::string str) {
             return false;
     }
     return true;
+}
+
+int Server::is_bot(std::map<int, Clients>::iterator &it)
+{
+    std::map<std::string, Clients>::iterator check;
+    if (it->second.GetBuffer() == "!!joke") {
+        check = nick_clients.find("bot");
+        if(check != nick_clients.end()) {
+
+            std::string nick = it->second.GetNickname();
+            std::string buffed = it->second.GetBuffer() + nick;
+            msg_client(check->second.GetFdClient(),buffed);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int Server::repl_bot(std::map<int, Clients>::iterator &it) {
+    if (it->second.GetNickname() == "bot") {
+        std::string str = it->second.GetBuffer().substr(0, it->second.GetBuffer().find(" "));
+        std::string msg = it->second.GetBuffer().substr(it->second.GetBuffer().find(" ") + 1) + "\r\n";
+        std::map<std::string, Clients>::iterator check;
+        check = nick_clients.find(str);
+        int fd = check->second.GetFdClient();
+        send_rep(fd, msg);
+        return 1;
+    }
+    return 0;
 }
 
 void Server::init__and_run()
@@ -183,18 +215,29 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            std::cout << '['<< it->second.GetBuffer()<< ']' << std::endl;
+                            std::cout << '['<< it->second.GetBuffer()<< "] " << it->first << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
                                 else {
+                                    // if (is_bot(it)) {
+                                    //     if (it->second.GetBoolNewline() == true)
+                                    //         it->second.Buff_clear();
+                                    //     continue;
+                                    // }
+                                    // if (repl_bot(it)) {
+                                    //     if (it->second.GetBoolNewline() == true)
+                                    //         it->second.Buff_clear();
+                                    //     continue;
+                                    // }
                                     if_authenticate_client(it->second, _channel_list);
                                     check_cmd(it);
                                 }
                             }
-                        }
                         if (it->second.GetBoolNewline() == true)
                             it->second.Buff_clear();
+                        std::cout  << std::boolalpha << it->second.GetBoolPassword()<< " | " << it->second.GetBoolIdentify()<< std::endl;
+                        }
                     }
                 }
             }

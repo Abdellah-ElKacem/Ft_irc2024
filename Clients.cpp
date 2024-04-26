@@ -14,6 +14,7 @@ Clients::Clients(int fd, std::string ip_client) {
     __identify_ = false;
     __newline_ = false;
     __he_know_ = false;
+    __bot_ = false;
 }
 
 std::string Clients::GetNickname() const {
@@ -85,6 +86,10 @@ bool Clients::GetBoolKnow() const {
     return __he_know_;
 }
 
+bool Clients::GetBoolBot() const {
+    return __bot_;
+}
+
 void Clients::check_new_line() {
 
     size_t idx = _buffer_cl.find('\n');
@@ -119,6 +124,10 @@ void Clients::SetBoolOk(bool val) {
 
 void Clients::SetBoolKnow(bool val) {
     __he_know_ = val;
+}
+
+void Clients::SetBoolBot(bool val) {
+    __bot_ = val;
 }
 
 void Clients::SetBoolPassword(bool val) {

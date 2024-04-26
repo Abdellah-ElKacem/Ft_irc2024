@@ -2,7 +2,7 @@
 #include "../channel.hpp"
 
 void Server::if_authenticate_client(Clients& client, std::map<std::string, channel>& _channel_list) {
-    std::string cmd, msg, part_cmd, old_nick;
+    std::string cmd, cmd_bf = client.GetBuffer(), msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     std::map<int, Clients>::iterator it;
     
@@ -10,8 +10,16 @@ void Server::if_authenticate_client(Clients& client, std::map<std::string, chann
         return;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
-    } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
-            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" && cmd != "PING" && cmd != "PONG" ) {
+    } for (size_t i = 0; i < cmd_bf.size(); i++) {
+        cmd_bf[i] = std::toupper(cmd_bf.c_str()[i]);
+    }
+	if (cmd_bf == "/BOT") {
+		// bot(client);
+        std::system("./a.out 127.0.0.1 6667");
+		// return;
+	}
+    if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
+            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" && cmd != "PING" && cmd != "PONG" && cmd_bf != "/BOT") {
         msg = ":ircserv_KAI.chat 421 " + client.GetNickname() + ' ' + cmd + " :Unknown command\r\n";
         msg_client(client.GetFdClient(), msg);
     } else if (cmd == "PASS" || cmd == "USER") {

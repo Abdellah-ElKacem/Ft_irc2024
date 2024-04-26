@@ -4,6 +4,7 @@
 std::map<std::string, channel> _channel_list;
 std::string server_name = "ircserv_KAI.chat";
 
+
 void trim(std::string& str)
 {
 	size_t bigen = str.find_first_not_of(" \n\t\v");
@@ -39,6 +40,16 @@ void    ft_split_command(std::string& command, std::vector<std::string>& args)
         args.push_back(temp);
 }
 
+void Server::bot(Clients &it) {
+	int fd_bot = socket(AF_INET, SOCK_STREAM, 0);
+	__clients.sin_family = AF_INET;
+    __clients.sin_port = htons(_port);
+    __clients.sin_addr.s_addr = INADDR_ANY;
+	std::cout << fd_bot << std::endl;
+	connect(fd_bot, (struct sockaddr*)&__clients, sizeof(__clients));
+	it.SetBoolBot(true);
+	_bot_fd = fd_bot;
+}
 
 void check_cmd(std::map<int ,Clients>::iterator it)
 {
@@ -61,7 +72,14 @@ void check_cmd(std::map<int ,Clients>::iterator it)
 		pars_join_mode(args, it);  
 	if (args[0] == "KICK" || args[0] == "INVITE" || args[0] == "TOPIC" || args[0] == "PRIVMSG")
 		ft_handle_cmd(it, args);
-	
+	// if (it->second.GetBoolBot() == false && args[0] == "/BOT") {
+	// 	bot(it);
+	// 	return;
+	// }
+					// if (it->second.GetBoolBot() == true && args[0] == "/JOKE") {
+					// 	std::string msg = "galik hada wa7ad hahaha xD \n";
+					// 	send_rep(it->first, msg);
+					// }
 	// std::map<std::string, channel>::iterator pr;
 	// for (pr = _channel_list.begin(); pr != _channel_list.end(); pr++)
 	// {

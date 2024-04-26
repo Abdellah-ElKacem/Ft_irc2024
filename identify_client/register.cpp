@@ -100,6 +100,7 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
                 msg_client(client.GetFdClient(), msg);
                 client.SetBoolIdentify(true);
                 nick_clients.insert(std::make_pair(client.GetNickname(), client));
+                                            std::cout << "------> " << client.GetNickname() << " | " << client.GetFdClient() << " | "<< client.GetUsername() << std::endl;
             }
         }
     }
