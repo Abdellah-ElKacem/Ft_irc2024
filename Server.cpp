@@ -50,7 +50,7 @@ int Server::accept_func()
             std::perror("Accept");
         return 1;
     }
-    // welcome_client(client_fd);
+    welcome_client(client_fd);
     ip_client = inet_ntoa(__clients.sin_addr);
     if (!ip_client.c_str()) {
         std::cerr << "inet_ntoa failed.\n";
@@ -113,35 +113,6 @@ bool has_only_space(std::string str) {
     return true;
 }
 
-int Server::is_bot(std::map<int, Clients>::iterator &it)
-{
-    std::map<std::string, Clients>::iterator check;
-    if (it->second.GetBuffer() == "!!joke") {
-        check = nick_clients.find("bot");
-        if(check != nick_clients.end()) {
-
-            std::string nick = it->second.GetNickname();
-            std::string buffed = it->second.GetBuffer() + nick;
-            msg_client(check->second.GetFdClient(),buffed);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int Server::repl_bot(std::map<int, Clients>::iterator &it) {
-    if (it->second.GetNickname() == "bot") {
-        std::string str = it->second.GetBuffer().substr(0, it->second.GetBuffer().find(" "));
-        std::string msg = it->second.GetBuffer().substr(it->second.GetBuffer().find(" ") + 1) + "\r\n";
-        std::map<std::string, Clients>::iterator check;
-        check = nick_clients.find(str);
-        int fd = check->second.GetFdClient();
-        send_rep(fd, msg);
-        return 1;
-    }
-    return 0;
-}
-
 void Server::init__and_run()
 {
     int ok = 1;
@@ -149,15 +120,19 @@ void Server::init__and_run()
         std::perror("socket");
         exit(EXIT_FAILURE);
     } if (setsockopt(_server_sock, SOL_SOCKET, SO_REUSEADDR, &ok, sizeof(int)) < 0) {
+        close (_server_sock);
         std::perror("setsockopt(SO_REUSEADDR) failed");
         exit(EXIT_FAILURE);
     } if (setsockopt(_server_sock, SOL_SOCKET, SO_NOSIGPIPE, &ok, sizeof(int)) < 0) {
+        close (_server_sock);
         std::perror("setsockopt(SO_REUSEADDR) failed");
         exit(EXIT_FAILURE);
     } if (bind(_server_sock, (sockaddr*)&__serv_addr, sizeof(__serv_addr)) == -1) {
+        close (_server_sock);
         std::perror("Error Bind");
         exit(EXIT_FAILURE);
     } if (listen(_server_sock, NUM_OF_CONNECTIONS) == -1) {
+        close (_server_sock);
         std::perror("Error Listen");
         exit(EXIT_FAILURE);
     }
@@ -220,16 +195,6 @@ void Server::init__and_run()
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
                                 else {
-                                    // if (is_bot(it)) {
-                                    //     if (it->second.GetBoolNewline() == true)
-                                    //         it->second.Buff_clear();
-                                    //     continue;
-                                    // }
-                                    // if (repl_bot(it)) {
-                                    //     if (it->second.GetBoolNewline() == true)
-                                    //         it->second.Buff_clear();
-                                    //     continue;
-                                    // }
                                     if_authenticate_client(it->second, _channel_list);
                                     check_cmd(it);
                                 }

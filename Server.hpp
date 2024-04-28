@@ -14,6 +14,10 @@
 #include <fcntl.h>
 #include <sstream>
 #include <ctime>
+#include <fstream>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 
 #include "Clients.hpp"

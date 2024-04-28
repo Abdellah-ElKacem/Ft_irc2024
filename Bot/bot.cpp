@@ -1,14 +1,7 @@
 #include "../Server.hpp"
 #include "../channel.hpp"
-#include <fstream>
 
-void send_rep_(int fd, std::string msg)
-{
-    if (send(fd, msg.c_str() , msg.size(), 0) == -1)
-        std::cerr << "ERROR: send\n";
-}
-
-int registr_bot(int fd_bot, std::string pass, std::string nick, bool is_ok) {
+int registr_bot(int fd_bot, std::string pass, std::string nick) {
     char buffer[512];
     std::string str;
     str = "pass " + pass + "\r\n";
@@ -17,27 +10,10 @@ int registr_bot(int fd_bot, std::string pass, std::string nick, bool is_ok) {
     write(fd_bot, str.c_str(), str.length());
     str = "nick " + nick + "\r\n";
     write(fd_bot, str.c_str(), str.length());
-    ssize_t readd = read(fd_bot, buffer, 511);
-    if (readd <= 0)
-        return 1;
-    buffer[readd] = '\0';
-    std::string check, rr;
-    check = buffer;
-    rr = check.substr(check.find(" ") + 1, 3);
-    if (rr == "464" || rr == "461") {
-        std::cout << "U must put the correct Password ,Try Again.. :/" << std::endl;
-        close(fd_bot);
-        return 1;
-    }
-    if (rr == "433" || rr == "432") {
-        std::cout << "This nickname is used or Error in NickName, Try Again.. :/" << std::endl;
-        close(fd_bot);
-        return 1;
-    }
     return 0;
 }
 
-int is_privmsg(int fd_bot, std::string str, std::string nick) {
+int is_privmsg(int fd_bot, std::string str, std::string nick, bool &ok) {
         std::string cmd;
         size_t indx = str.find(" "), i = 0;
         while(indx != str.npos) {
@@ -59,10 +35,11 @@ int is_privmsg(int fd_bot, std::string str, std::string nick) {
             std::ifstream f_joke("Jokes.txt");
             if(f_joke.fail()) {
                 return 1;
-            } while(getline(f_joke, line)) {
+            } while (getline(f_joke, line)) {
                 if(i == rand_val) {
                     std::string str1 = "PRIVMSG " + nick + " :" + line + " \r\n";
                     send(fd_bot, str1.c_str(),str1.length(),0);
+                    f_joke.close();
                     break;
                 }
                 i++;
@@ -83,7 +60,7 @@ int is_privmsg(int fd_bot, std::string str, std::string nick) {
 }
 
 int main(int ac, char *av[]) {
-    bool is_ok = true;
+    bool ok = false;
     if (ac != 6) {
         std::cout << "U must folow this steps : address -> port -> nickname -> cookies -> password .\nTry Again.. :/" << std::endl;
         return EXIT_FAILURE;
@@ -92,23 +69,27 @@ int main(int ac, char *av[]) {
     std::string pass = av[5];
     std::string nick = av[3];
     struct sockaddr_in __bot;
+    std::cout << "The Bot will be Installed on the Server with Nick_Name : " << nick << ", Enjoy ;)" << std::endl;
     fd_bot = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_bot < 0) {
         std::perror("socket");
         exit(EXIT_FAILURE);
     }
+    std::memset(&__bot, 0, sizeof(__bot));
     __bot.sin_family = AF_INET;
     __bot.sin_port = htons(std::atoi(av[2]));
     __bot.sin_addr.s_addr = inet_addr(av[1]);
 	if (connect(fd_bot, (struct sockaddr*)&__bot, sizeof(__bot)) != 0) {
+        close(fd_bot);
         std::perror("connect");
         return EXIT_FAILURE;
     }
-    sleep(2);
-    if (registr_bot(fd_bot, pass, nick, is_ok))
+    if (registr_bot(fd_bot, pass, nick)) {
+        close(fd_bot);
         return EXIT_FAILURE;
+    }
     char buffer[512];
-    std::string str;
+    std::string str, rr;
     while (1) {
         std::memset(buffer, 0, 512);
         ssize_t readd = read(fd_bot, buffer, 511);
@@ -118,6 +99,17 @@ int main(int ac, char *av[]) {
         str = buffer;
         if (str.empty())
             continue;
+        rr = str.substr(str.find(" ") + 1, 3);
+        if (rr == "464" || rr == "461") {
+            std::cout << "U must put the correct Password ,Try Again.. :/" << std::endl;
+            close(fd_bot);
+            return 1;
+        }
+        if (rr == "433" || rr == "432" || rr == "431") {
+            std::cout << "This nickname is used or Error in NickName, Try Again.. :/" << std::endl;
+            close(fd_bot);
+            return 1;
+        }
         if (str.substr(0, 4) == "PING") {
             std::string num_pong = "PONG " + str.substr(6);
             send(fd_bot, num_pong.c_str(),num_pong.length(),0);
@@ -127,7 +119,7 @@ int main(int ac, char *av[]) {
         if (test == "PRIVMSG")
         {
             std::string nick = str.substr(1, str.find("!") - 1);
-            if(is_privmsg(fd_bot, str, nick)) {
+            if(is_privmsg(fd_bot, str, nick, ok)) {
                 std::string str1 = "PRIVMSG " + nick + " :no jokes in database, Try search command..\r\n";
                 send(fd_bot, str1.c_str(),str1.length(),0);
                 continue;
