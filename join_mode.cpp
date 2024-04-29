@@ -133,7 +133,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
             inv_find = std::find(it->second._invited_list.begin(), it->second._invited_list.end(), it_c->second.GetNickname());
             if (inv_find == it->second._invited_list.end())
             {
-                send_rep(it_c->first, ERR_INVITEONLY(it_c->second.GetNickname(), it->first));
+                send_rep(it_c->first, ERR_INVITEONLY(it_c->second.GetNickname(), name_srv, it->first));
                 return ;
             }
         }
@@ -165,7 +165,8 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
 void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>& _channel_list, std::string channel_mane)
 {
     std::map<std::string, channel>::iterator it_find = _channel_list.find(channel_mane);
-    std::string buffer;
+    std::vector<std::string>::iterator name_find;
+    std::string buffer = "";
 
     // std::time_t time = std::time(NULL);
     std::string time = "0";
@@ -173,20 +174,26 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 
     if (it_find != _channel_list.end())
     {
-        buffer.push_back('+');
-        if (it_find->second._is_invited)
-            buffer.push_back('i');
-        if (it_find->second._is_locked)
-            buffer.push_back('k');
-        if (it_find->second._is_topiced)
-            buffer.push_back('t');
-        if (it_find->second._limit_members)
-            buffer.push_back('l');
-        send_rep(it_c->first, RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
-        send_rep(it_c->first, RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
+        name_find = std::find(it_find->second._members_list.begin(), it_find->second._members_list.end(), it_c->second.GetNickname());
+        if (name_find != it_find->second._members_list.end())
+        {
+            buffer.push_back('+');
+            if (it_find->second._is_invited)
+                buffer.push_back('i');
+            if (it_find->second._is_locked)
+                buffer.push_back('k');
+            if (it_find->second._is_topiced)
+                buffer.push_back('t');
+            if (it_find->second._limit_members)
+                buffer.push_back('l');
+            send_rep(it_c->first, RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
+            send_rep(it_c->first, RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
+        }
+        else
+            send_rep(it_c->first, ERR_NOTONCHANNEL(name_srv, channel_mane));
     }
     else
-        send_rep(it_c->first, ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), it_find->first));
+        send_rep(it_c->first, ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), channel_mane));
 }
 
 
@@ -375,17 +382,16 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                         handl_l_m(it_ch, it_c);
                     z++;
                 }
-                // if (modes[i][j] == 'i')
-                // {
-                //     if (sign)
-                //     {
-                //         if (z <= args.size())
-                //             handl_i(it_ch, args[z - 1], it_c);
-                //     }
-                //     else
-                //         handl_i_m(it_ch, args[z - 1], it_c);
-                //     z++;
-                // }
+                if (modes[i][j] == 'i')
+                {
+                    if (sign)
+                    {
+                        handl_i(it_ch, it_c);
+                    }
+                    else
+                        handl_i_m(it_ch, it_c);
+                    z++;
+                }
             }
         }
     }
