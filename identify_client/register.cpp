@@ -93,14 +93,19 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
             if (client.GetBoolPassword() == true && client.GetBoolNickname() == true && client.GetBoolUsername() == true) {
                 msg = ":ircserv_KAI.chat 001 " + client.GetNickname() + " :Welcome to the KAI_IRC Network, " + client.GetNickname() + " \r\n";                
                 msg_client(client.GetFdClient(), msg);
+
                 msg = ":ircserv_KAI.chat 002 " + client.GetNickname() + " :Your host is ircserv_KAI.chat, running version Vol:°01.. ©™ \r\n";
                 msg_client(client.GetFdClient(), msg);
 
                 msg = ":ircserv_KAI.chat 003 " + client.GetNickname() + " :This server was created " + str_m + '/' + str_d + "/" + str_y + " at " + str_h + ':' + str_mi + ':' + str_s + " GMT \r\n";
                 msg_client(client.GetFdClient(), msg);
+
+                msg = ":ircserv_KAI.chat 004 " + client.GetNickname() + " :host: ircserv_KAI.chat, Version: Vol:°01.. ©™, User mode: none, Channel modes: o, t, k, i !\r\n";
+                msg_client(client.GetFdClient(), msg);
+
                 client.SetBoolIdentify(true);
                 nick_clients.insert(std::make_pair(client.GetNickname(), client));
-                                            std::cout << "------> " << client.GetNickname() << " | " << client.GetFdClient() << " | "<< client.GetUsername() << std::endl;
+                                            // std::cout << "------> " << client.GetNickname() << " | " << client.GetFdClient() << " | "<< client.GetUsername() << std::endl;
             }
         }
     }

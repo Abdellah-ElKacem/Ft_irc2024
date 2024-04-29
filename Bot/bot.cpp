@@ -69,7 +69,7 @@ int main(int ac, char *av[]) {
     std::string pass = av[5];
     std::string nick = av[3];
     struct sockaddr_in __bot;
-    std::cout << "The Bot will be Installed on the Server with Nick_Name : " << nick << ", Enjoy ;)" << std::endl;
+    std::cout << "The Bot will be Installed on the Server with Nick_Name : \" " << nick << " \", Enjoy ;)" << std::endl;
     fd_bot = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_bot < 0) {
         std::perror("socket");

@@ -96,6 +96,11 @@ void Clients::check_new_line() {
 
     if (idx != _buffer_cl.npos) {
         _buffer_cl_final += _buffer_cl.substr(0, idx);
+        if (_buffer_cl_final.size() > 512) {
+            std::string msg = ":ircserv_KAI.chat 417 " + GetNickname() + " :Input line was too long\r\n";
+            send_rep(GetFdClient(), msg);
+            return;
+        }
         _buffer_cl = _buffer_cl.substr(idx + 1);
         SetBoolNewline(true);
     } else {

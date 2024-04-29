@@ -44,7 +44,7 @@ int Server::accept_func()
     std::string ip_client;
     socklen_t addrlen = sizeof(struct sockaddr);
     int client_fd = accept(_server_sock,(struct sockaddr*)&__clients, (socklen_t*)&addrlen);
-    std::cout << "fd_client : " << client_fd << '\n';
+    // std::cout << "fd_client : " << client_fd << '\n';
     if (client_fd == -1) {
         if (errno != EWOULDBLOCK)
             std::perror("Accept");
@@ -59,8 +59,7 @@ int Server::accept_func()
 	_fds.push_back(add_to_poll(client_fd));
     Clients client(client_fd, ip_client);
     map_of_clients[client.GetFdClient()] = client;
-    // if (_bot_fd == -1)
-        std::cout << "a client connected\n";
+    std::cout << "a client connected" << std::endl;
     return 0;
 }
 
@@ -190,7 +189,7 @@ void Server::init__and_run()
                         while (!it->second.GetBuffer_tmp().empty()) {
                             it->second.check_new_line();
                             it->second.trim_string();
-                            std::cout << '['<< it->second.GetBuffer()<< "] " << it->first << std::endl;
+                            // std::cout << '['<< it->second.GetBuffer()<< "] " << it->first << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
@@ -201,14 +200,11 @@ void Server::init__and_run()
                             }
                         if (it->second.GetBoolNewline() == true)
                             it->second.Buff_clear();
-                        std::cout  << std::boolalpha << it->second.GetBoolPassword()<< " | " << it->second.GetBoolIdentify()<< std::endl;
+                        // std::cout  << std::boolalpha << it->second.GetBoolPassword()<< " | " << it->second.GetBoolIdentify()<< std::endl;
                         }
                     }
                 }
             }
-            // if (_fds[i].revents & POLLERR) {
-            //     std::cout<< "error:" << _fds[i].fd << '\n';
-            // }
         }
     }
     for (size_t i = 0; i < _fds.size(); i++)

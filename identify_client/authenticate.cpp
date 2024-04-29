@@ -49,7 +49,7 @@ void Server::if_authenticate_client(Clients& client, std::map<std::string, chann
             msg_client(client.GetFdClient(),msg);
             return;
         }
-        for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++) {
+        for ( it = map_of_clients.begin(); it != map_of_clients.end(); it++ ) {
             if (it->second.GetNickname() == part_cmd) {
                 msg = ":ircserv_KAI.chat 433 " + part_cmd + " NICK :Nickname is already in use\r\n";
                 msg_client(client.GetFdClient(),msg);
