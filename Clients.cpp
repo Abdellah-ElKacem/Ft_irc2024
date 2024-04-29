@@ -114,13 +114,24 @@ void Clients::check_new_line() {
 
 void Clients::trim_string() {
     if(!_buffer_cl_final.empty()) {
+        size_t indx = _buffer_cl_final.find(":");
+        std::string no_space, tmp, after_space;
+        if (indx != _buffer_cl_final.npos) {
+            after_space = _buffer_cl_final.substr(indx);
+            _buffer_cl_final = _buffer_cl_final.substr(0, _buffer_cl_final.find(":"));
+        } else
+            after_space = "";
         std::stringstream trim(_buffer_cl_final);
-        std::string no_space, tmp;
         while (trim >> no_space)
             tmp.append(no_space + ' ');
         tmp.erase(tmp.size() - 1);
-        _buffer_cl_final = tmp;
+        if (after_space.empty())
+            _buffer_cl_final = tmp + after_space;
+        else
+            _buffer_cl_final = tmp + ' ' + after_space;
+        // std::cout << "after_spc : "<< after_space << std::endl;
     }
+        // std::cout<< "====> : |" << _buffer_cl_final << '|'<< std::endl;
 }
 
 void Clients::SetBoolOk(bool val) {

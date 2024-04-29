@@ -35,7 +35,7 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
             return;
         } else if ( client.GetBoolPassword() == true ) {
             if (part1 == "PASS" && client.GetBoolPassword() == true) {
-                    msg = ":ircserv_KAI.chat * " + client.GetNickname() + " PASS :You are already put the password\r\n";
+                msg = ":ircserv_KAI.chat * " + client.GetNickname() + " PASS :You are already put the password\r\n";
                 msg_client(client.GetFdClient(),msg);
                 return;
             } if ( part1 == "NICK" ) {

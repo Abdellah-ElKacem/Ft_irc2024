@@ -14,9 +14,9 @@ Server::Server(const std::string port, const std::string password)
         }
     }
     _port = std::atol(port.c_str());
+    if (_port )
     _the_port = port;
     _password = password;
-    _bot_fd = -1;
     __serv_addr.sin_family = AF_INET;
     __serv_addr.sin_port = htons(_port);
     __serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -161,7 +161,7 @@ void Server::init__and_run()
                 } else {
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
-                    ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) - 1 , 0);
+                    ssize_t recvv = recv(_fds[i].fd, buff, sizeof(buff) - 1 , 0);
                     _buffer = buff;
                     if (_buffer.size() > Max_size_buff) {
                         _buffer.clear();
