@@ -156,9 +156,20 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         }
         it->second._members_list.push_back(it_c->second.GetNickname());
         it->second._limit_nb++;
-        ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
-        send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
-        send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        if (it->second._topic_name.empty())
+        {
+            ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
+            send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        }
+        else
+        {
+            ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
+            send_rep(it_c->first, RPL_TOPICDISPLAY(name_srv, it_c->second.GetNickname(), it->first, it->second._topic_name));
+            // send_rep(it_c->first, RPL_TOPICWHOTIME(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        }
     }
 }
 
@@ -168,7 +179,6 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
     std::vector<std::string>::iterator name_find;
     std::string buffer = "";
 
-    // std::time_t time = std::time(NULL);
     std::string time = "0";
     
 
