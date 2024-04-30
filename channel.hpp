@@ -13,6 +13,7 @@ class channel
 {
     public:
         std::string                 _ch_name;
+        std::string                 _topic_setter;
         std::string                 _topic_name;
         std::string                 _pass;
         std::map<std::string, int>  _members_list1;
