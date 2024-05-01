@@ -6,7 +6,7 @@
 /*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/04/25 18:59:49 by ael-kace         ###   ########.fr       */
+/*   Updated: 2024/04/30 13:25:08 by ael-kace         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,10 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	channels channel_it;
 	std::vector<std::string>::iterator search_it;
 
+	for (size_t i = 0; i < args.size(); i++) {
+		std::cout <<"------------> : "<< args[i] << std::endl;
+	}
+	
 	if (args.size() <= 2)
 	{
 		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));

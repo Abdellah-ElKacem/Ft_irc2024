@@ -1,5 +1,5 @@
 --> delet user in all channels after quit
---> fix time in some replays
+--> fix time in some replays -- time()
 --> MODE :
     +K
     +l

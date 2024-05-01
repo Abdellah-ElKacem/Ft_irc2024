@@ -5,7 +5,7 @@ bool Server::parce_nick(std::string &part2) {
         return false;
     for (size_t i = 0; i < part2.length(); i++) {
         if ( !std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
-            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\' && part2[i] )
+            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\' && part2[i] != '_' )
                 return false;
     }
     return true;    

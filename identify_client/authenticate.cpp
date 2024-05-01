@@ -1,9 +1,9 @@
 #include "../Server.hpp"
 #include "../channel.hpp"
 
-void Server::if_authenticate_client(Clients& client, std::map<std::string, channel>& _channel_list) {
+void Server::if_authenticate_client(Clients& client) {
     
-    std::string cmd, cmd_bf = client.GetBuffer(), msg, part_cmd, old_nick;
+    std::string cmd, msg, part_cmd, old_nick;
     cmd = client.GetBuffer().substr(0,client.GetBuffer().find(" "));
     std::map<int, Clients>::iterator it;
     
@@ -11,11 +11,8 @@ void Server::if_authenticate_client(Clients& client, std::map<std::string, chann
         return;
     for (size_t i = 0; i < cmd.size(); i++) {
         cmd[i] = std::toupper(cmd.c_str()[i]);
-    } for (size_t i = 0; i < cmd_bf.size(); i++) {
-        cmd_bf[i] = std::toupper(cmd_bf.c_str()[i]);
-    }
-    if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
-            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" && cmd != "PING" && cmd != "PONG" && cmd_bf != "/BOT") {
+    } if ( cmd != "JOIN" && cmd != "KICK" && cmd != "INVITE" && cmd != "TOPIC" && cmd != "MODE" && cmd != "PRIVMSG" \
+            && cmd != "PASS" && cmd != "USER" && cmd != "NICK" && cmd != "PING" && cmd != "PONG") {
         msg = ":ircserv_KAI.chat 421 " + client.GetNickname() + ' ' + cmd + " :Unknown command\r\n";
         msg_client(client.GetFdClient(), msg);
     } else if (cmd == "PASS" || cmd == "USER") {
@@ -54,12 +51,13 @@ void Server::if_authenticate_client(Clients& client, std::map<std::string, chann
         }
         std::map<std::string, channel>::iterator it_ch;
         std::vector<std::string>::iterator it_nick;
-        std::map<std::string, Clients>::iterator it_cl;
 
         std::map<std::string, int> add_to_print;
         std::map<std::string, int>::iterator add_to_print1, key_t_print;
 
         client.setNickname(part_cmd);
+
+        std::map<std::string, Clients>::iterator it_cl;
         it_cl = nick_clients.find(old_nick);
         if (it_cl != nick_clients.end()) {
             nick_clients.erase(it_cl);
@@ -93,12 +91,16 @@ void Server::if_authenticate_client(Clients& client, std::map<std::string, chann
 
             it_nick = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), client.GetNickname());
             if (it_nick != it_ch->second._members_list.end()) {
-                for (key_t_print = it_ch->second._members_list1.begin(); key_t_print != it_ch->second._members_list1.end(); key_t_print++)
-                    add_to_print[key_t_print->first] = key_t_print->second;
+                for (key_t_print = it_ch->second._members_list1.begin(); key_t_print != it_ch->second._members_list1.end(); key_t_print++) {
+                    // add_to_print[key_t_print->first] = key_t_print->second;
+                    add_to_print.insert(std::make_pair(key_t_print->first, key_t_print->second));
+                }
             }
         }
-        msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
         for (add_to_print1 = add_to_print.begin(); add_to_print1 != add_to_print.end(); add_to_print1++) {
+            // std::cout << "msg for nick -->" << add_to_print1->first<< " and fd for msg -->" << add_to_print1->second << std::endl;
+            
+            msg = ":" + old_nick + "!~" + client.GetUsername() + '@' + client.GetIpClient() + " NICK :" + client.GetNickname() + "\r\n";
             msg_client(add_to_print1->second, msg);
         }
     }
