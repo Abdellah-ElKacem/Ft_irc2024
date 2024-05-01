@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/04/30 17:00:54 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/01 15:17:06 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,11 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 		ft_remove_fromlist(channel_it->second._members_list, args[2]);
 		ft_remove_fromlist(channel_it->second._operetos_list, args[2]);
 		ft_remove_fromlist(channel_it->second._invited_list, args[2]);
+		if (channel_it->second._members_list.size() == 0)
+		{
+			_channel_list.erase(channel_it);
+			
+		}
 	}
 }
 
@@ -297,11 +302,6 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 
 void ft_handle_cmd(client& it, std::vector<std::string> &args)
 {
-	// for (size_t i = 0; i < args.size(); i++)
-	// {
-	// 	std::cout << args[i] << std::endl;
-	// }
-	
 	if (args[0] == "TOPIC")
 		ft_handle_topic(it ,args);
 	else if (args[0] == "KICK")
