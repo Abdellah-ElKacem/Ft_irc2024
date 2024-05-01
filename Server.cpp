@@ -14,9 +14,12 @@ Server::Server(const std::string port, const std::string password)
         }
     }
     _port = std::atol(port.c_str());
+    if (_port == 0 || _port > 9999) {
+        std::cerr << "Invalid port :/" << std::endl;
+        exit (EXIT_FAILURE);
+    }
     _the_port = port;
     _password = password;
-    _bot_fd = -1;
     __serv_addr.sin_family = AF_INET;
     __serv_addr.sin_port = htons(_port);
     __serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -161,7 +164,7 @@ void Server::init__and_run()
                 } else {
                     char buff[1024];
                     std::memset(buff, 0, sizeof(buff));
-                    ssize_t recvv = recv(_fds[i].fd,buff, sizeof(buff) - 1 , 0);
+                    ssize_t recvv = recv(_fds[i].fd, buff, sizeof(buff) - 1 , 0);
                     _buffer = buff;
                     if (_buffer.size() > Max_size_buff) {
                         _buffer.clear();
@@ -194,7 +197,7 @@ void Server::init__and_run()
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
                                 else {
-                                    if_authenticate_client(it->second, _channel_list);
+                                    if_authenticate_client(it->second);
                                     check_cmd(it);
                                 }
                             }
@@ -202,6 +205,17 @@ void Server::init__and_run()
                             it->second.Buff_clear();
                         // std::cout  << std::boolalpha << it->second.GetBoolPassword()<< " | " << it->second.GetBoolIdentify()<< std::endl;
                         }
+                        // std::cout << "---------------------------------------------------" << std::endl;
+                        // std::map<int, Clients>::iterator check_client;
+                        // std::map<std::string, Clients>::iterator check_nick_client;
+                        // for (check_client = map_of_clients.begin(); check_client != map_of_clients.end(); check_client++) {
+                        //     std::cout << "the fd is : | " << check_client->first << " | and the nickname  is : | " << check_client->second.GetNickname() << std::endl;
+                        // }
+                        // std::cout << std::endl;
+                        // for (check_nick_client = nick_clients.begin(); check_nick_client != nick_clients.end(); check_nick_client++) {
+                        //     std::cout << "the nick is : | " << check_nick_client->first << " | and the fd is : | " << check_nick_client->second.GetFdClient() << std::endl;
+                        // }
+                        // std::cout << "---------------------------------------------------" << std::endl;
                     }
                 }
             }

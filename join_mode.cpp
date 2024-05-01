@@ -1,7 +1,8 @@
 #include "channel.hpp"
 
 std::string name_srv = "ircserv_KAI.chat";
-channel::channel() {}
+channel::channel()
+{}
 
 channel::channel(std::string ch_name)
 {
@@ -15,7 +16,9 @@ channel::channel(std::string ch_name)
 void send_rep(int fd, std::string msg)
 {
     if (send(fd, msg.c_str() , msg.size(), 0) == -1)
-        std::cerr << "ERROR: send\n";
+    {
+         std::cerr << "ERROR: send\n";
+    }
 }
 
 std::string get_all(std::map<std::string, channel>::iterator it)
@@ -102,10 +105,10 @@ void creat_channel(std::map<std::string, channel>& _channel_list, std::map<int ,
     buffer.push_back('t');
     _channel_list.insert(std::make_pair(name_ch, obj));
 
-    send_rep(it_c->second.GetFdClient(), RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), name_ch,it_c->second.GetIpClient()));
-    send_rep(it_c->second.GetFdClient(), RPL_MODEIS(name_ch, name_srv, buffer));
-    send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, "@" + it_c->second.GetNickname(), name_ch, it_c->second.GetNickname()));
-    send_rep(it_c->second.GetFdClient(), RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), name_ch));
+    send_rep(it_c->first, RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), name_ch,it_c->second.GetIpClient()));
+    send_rep(it_c->first, RPL_MODEIS(name_ch, name_srv, buffer));
+    send_rep(it_c->first, RPL_NAMREPLY(name_srv, "@" + it_c->second.GetNickname(), name_ch, it_c->second.GetNickname()));
+    send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), name_ch));
 }
 
 void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>::iterator it, std::vector<std::string> pass_wd, int i)
@@ -121,7 +124,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         {
             if (it->second._members_list.size() >= it->second._limit_nb)
             {
-                send_rep(it_c->second.GetFdClient(), ERR_CHANNELISFULL(it_c->second.GetNickname(), it->first));
+                send_rep(it_c->first, ERR_CHANNELISFULL(it_c->second.GetNickname(), it->first));
                 return ;
             }
         }
@@ -131,7 +134,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
             inv_find = std::find(it->second._invited_list.begin(), it->second._invited_list.end(), it_c->second.GetNickname());
             if (inv_find == it->second._invited_list.end())
             {
-                send_rep(it_c->second.GetFdClient(), ERR_INVITEONLY(it_c->second.GetNickname(), it->first));
+                send_rep(it_c->first, ERR_INVITEONLY(it_c->second.GetNickname(), name_srv, it->first));
                 return ;
             }
         }
@@ -142,29 +145,30 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
             {
                 if (it->second._pass != pass_wd[i])
                 {
-                    send_rep(it_c->second.GetFdClient(), ERR_BADCHANNELKEY(it_c->second.GetNickname(), name_srv, it->first));
+                    send_rep(it_c->first, ERR_BADCHANNELKEY(it_c->second.GetNickname(), name_srv, it->first));
                     return ;
                 }
             }
             else
             {
-                send_rep(it_c->second.GetFdClient(), ERR_BADCHANNELKEY(it_c->second.GetNickname(), name_srv, it->first));
+                send_rep(it_c->first, ERR_BADCHANNELKEY(it_c->second.GetNickname(), name_srv, it->first));
                 return ;
             }
         }
         it->second._members_list.push_back(it_c->second.GetNickname());
         it->second._members_list1[it_c->second.GetNickname()] = it_c->second.GetFdClient();
         it->second._limit_nb++;
-        ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first,it_c->second.GetIpClient()), it);
-        send_rep(it_c->second.GetFdClient(), RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
-        send_rep(it_c->second.GetFdClient(), RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
+        send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+        send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
     }
 }
 
 void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, channel>& _channel_list, std::string channel_mane)
 {
     std::map<std::string, channel>::iterator it_find = _channel_list.find(channel_mane);
-    std::string buffer;
+    std::vector<std::string>::iterator name_find;
+    std::string buffer = "";
 
     // std::time_t time = std::time(NULL);
     std::string time = "0";
@@ -172,20 +176,26 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 
     if (it_find != _channel_list.end())
     {
-        buffer.push_back('+');
-        if (it_find->second._is_invited)
-            buffer.push_back('i');
-        if (it_find->second._is_locked)
-            buffer.push_back('k');
-        if (it_find->second._is_topiced)
-            buffer.push_back('t');
-        if (it_find->second._limit_members)
-            buffer.push_back('l');
-        send_rep(it_c->second.GetFdClient(), RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
-        send_rep(it_c->second.GetFdClient(), RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
+        name_find = std::find(it_find->second._members_list.begin(), it_find->second._members_list.end(), it_c->second.GetNickname());
+        if (name_find != it_find->second._members_list.end())
+        {
+            buffer.push_back('+');
+            if (it_find->second._is_invited)
+                buffer.push_back('i');
+            if (it_find->second._is_locked)
+                buffer.push_back('k');
+            if (it_find->second._is_topiced)
+                buffer.push_back('t');
+            if (it_find->second._limit_members)
+                buffer.push_back('l');
+            send_rep(it_c->first, RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
+            send_rep(it_c->first, RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
+        }
+        else
+            send_rep(it_c->first, ERR_NOTONCHANNEL(name_srv, channel_mane));
     }
     else
-        send_rep(it_c->second.GetFdClient(), ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), it_find->first));
+        send_rep(it_c->first, ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), channel_mane));
 }
 
 
@@ -193,32 +203,34 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
 // ------------------------------------ modes -----------------------------------------//
 // ------------------------------------------------------------------------------------//
 
+//------- (k) ---------//
 void handl_k(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
 {
     it_ch->second._is_locked = true;
     it_ch->second._pass = arg;
 
-    send_rep(it_c->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+k", arg, it_c->second.GetUsername()));
+    send_rep(it_c->first, RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+k", arg, it_c->second.GetUsername()));
 }
 
 void handl_k_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
 {
     it_ch->second._is_locked = false;
 
-    send_rep(it_c->second.GetFdClient(), RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
+    send_rep(it_c->first, RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
 }
 
+//------- (o) ---------//
 void handl_o(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
 {
     std::vector<std::string>::iterator find_it = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), arg);
     std::map<std::string, Clients>::iterator it_clients;
     if (find_it != it_ch->second._members_list.end())
-        it_ch->second._operetos_list.push_back(it_c->second.GetNickname());
+        it_ch->second._operetos_list.push_back(*find_it);
 
     it_clients = nick_clients.find(arg);
     if (it_clients != nick_clients.end())
         send_rep(it_clients->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
-    send_rep(it_c->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
+    send_rep(it_c->first, RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
 }
 
 void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
@@ -226,7 +238,65 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg, 
     std::vector<std::string>::iterator find_it = std::find(it_ch->second._operetos_list.begin(), it_ch->second._operetos_list.end(), arg);
     if (find_it != it_ch->second._operetos_list.end())
         it_ch->second._operetos_list.erase(find_it);
-    send_rep(it_c->second.GetFdClient(), RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()));
+    send_rep(it_c->first, RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-o", it_c->second.GetUsername()));
+}
+
+//------- (l) ---------//
+void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._limit_members == true)
+    {
+        it_ch->second._limit_members = true;
+        it_ch->second._limit_nb = std::atoi(arg.c_str());
+        ft_send_to_all(RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+l", arg, it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_l_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._limit_members == false)
+    {
+        it_ch->second._is_locked = false;
+        ft_send_to_all(RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+//------- (i) ---------//
+void handl_i(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_invited != true)
+    {
+        it_ch->second._is_invited = true;
+        ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+i", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_i_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_invited != false)
+    {
+        it_ch->second._is_invited = false;
+        ft_send_to_all(RPL_DELMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-i", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+//------- (t) ---------//
+void handl_t(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_topiced != true)
+    {
+        it_ch->second._is_topiced = true;
+        ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+t", it_c->second.GetUsername()), it_ch);
+    }
+}
+
+void handl_t_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
+{
+    if (it_ch->second._is_topiced != false)
+    {
+        it_ch->second._is_topiced = false;
+        ft_send_to_all(RPL_DELMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-t", it_c->second.GetUsername()), it_ch);
+    }
 }
 
 // ------------------------------------------------------------------------------------//
@@ -239,12 +309,19 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
     std::vector<std::string> modes;
     std::vector<std::string> args;
     std::map<std::string, channel>::iterator it_ch;
+    std::vector<std::string>::iterator it_op;
     int sign = 0;
 
     size_t z = 0;
     it_ch = _channel_list.find(ch_name);
     if (it_ch != _channel_list.end())
     {
+        it_op = std::find(it_ch->second._operetos_list.begin(), it_ch->second._operetos_list.end(), it_c->second.GetNickname());
+        if (it_op == it_ch->second._operetos_list.end())
+        {
+            send_rep(it_c->first, ERR_NOTOP(name_srv, it_ch->first));
+            return ;
+        }
         for (size_t i = 2; i <= cmd.size() - 1; i++)
         {
             if ((cmd[i][0] == '+' || cmd[i][0] == '-') && z == 0)
@@ -288,9 +365,40 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                         handl_o_m(it_ch, args[z - 1], it_c);
                     z++;
                 }
+                if (modes[i][j] == 't')
+                {
+                    if (sign)
+                        handl_t(it_ch, it_c);
+                    else
+                        handl_t_m(it_ch, it_c);
+                    z++;
+                }
+                if (modes[i][j] == 'l')
+                {
+                    if (sign)
+                    {
+                        if (z <= args.size())
+                            handl_l(it_ch, args[z - 1], it_c);
+                    }
+                    else
+                        handl_l_m(it_ch, it_c);
+                    z++;
+                }
+                if (modes[i][j] == 'i')
+                {
+                    if (sign)
+                    {
+                        handl_i(it_ch, it_c);
+                    }
+                    else
+                        handl_i_m(it_ch, it_c);
+                    z++;
+                }
             }
         }
     }
+    else
+        send_rep(it_c->first, ERR_NOSUCHCHANNEL(server_name, it_c->second.GetNickname(), ch_name));
 }
 
 void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterator it_c)
@@ -324,7 +432,7 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
             }
         }
         else
-            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
+            send_rep(it_c->first, ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
     else
     {
@@ -333,6 +441,6 @@ void pars_join_mode(std::vector<std::string> cmd, std::map<int ,Clients>::iterat
         else if (cmd.size() > 2)
             change_modes(cmd, _channel_list, it_c);
         else 
-            send_rep(it_c->second.GetFdClient(), ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
+            send_rep(it_c->first, ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, cmd[0]));
     }
 }

@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/01 15:17:06 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/01 17:44:31 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,16 +87,9 @@ void ft_remove_fromlist(std::vector<std::string>& list, std::string& name)
     if (it!= list.end())
         list.erase(it);
 }
-// bool ft_check_channel(channels& channel_it, std::string &channel_name)
-// {
-// 	if (channel_it->second._ch_name == channel_name)
-// 		return false;
-// 	return true;
-// }
 
 void ft_send_to_all(std::string msg, channels it)
 {
-	std::cout << "message" << std::endl;
 	std::map<std::string, Clients>::iterator it_clients;
 
 	for (size_t i = 0; i < it->second._members_list.size(); i++)
@@ -195,7 +188,6 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 		else
 		{
 			ft_extract_long_line(line, args, 3);
-			std::cout << line << std::endl;
 			ft_send_to_all(RPL_KICK(it->second.GetNickname(), it->second.GetUsername(), it->second.GetIpClient(), channel_it->second._ch_name,  args[2], line), channel_it);
 		}
 		ft_remove_fromlist(channel_it->second._members_list, args[2]);

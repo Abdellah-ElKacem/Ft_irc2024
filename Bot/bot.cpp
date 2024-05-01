@@ -116,7 +116,6 @@ void    ft_send_info(std::string& username, std::string& cookie, int fd, std::st
 	if (!ok)
 	{
 		split(cmd, result);
-		std::cout << ok << std::endl;
 		ft_get_data(result, "full_name", fd, nick);
 		ft_get_data(result, "location", fd, nick);
 		ft_get_lvl(result, "cursus", fd, nick);
