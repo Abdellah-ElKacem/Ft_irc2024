@@ -13,6 +13,8 @@ Clients::Clients(int fd, std::string ip_client) {
     __UserName_ = false;
     __identify_ = false;
     __newline_ = false;
+    __he_know_ = false;
+    __bot_ = false;
 }
 
 std::string Clients::GetNickname() const {
@@ -80,12 +82,25 @@ bool Clients::GetBoolOk() const {
     return __buff_ok_;
 }
 
+bool Clients::GetBoolKnow() const {
+    return __he_know_;
+}
+
+bool Clients::GetBoolBot() const {
+    return __bot_;
+}
+
 void Clients::check_new_line() {
 
     size_t idx = _buffer_cl.find('\n');
 
     if (idx != _buffer_cl.npos) {
         _buffer_cl_final += _buffer_cl.substr(0, idx);
+        if (_buffer_cl_final.size() > 512) {
+            std::string msg = ":ircserv_KAI.chat 417 " + GetNickname() + " :Input line was too long\r\n";
+            send_rep(GetFdClient(), msg);
+            return;
+        }
         _buffer_cl = _buffer_cl.substr(idx + 1);
         SetBoolNewline(true);
     } else {
@@ -99,17 +114,36 @@ void Clients::check_new_line() {
 
 void Clients::trim_string() {
     if(!_buffer_cl_final.empty()) {
+        size_t indx = _buffer_cl_final.find(":");
+        std::string no_space, tmp, after_space;
+        if (indx != _buffer_cl_final.npos) {
+            after_space = _buffer_cl_final.substr(indx);
+            _buffer_cl_final = _buffer_cl_final.substr(0, _buffer_cl_final.find(":"));
+        } else
+            after_space = "";
         std::stringstream trim(_buffer_cl_final);
-        std::string no_space, tmp;
         while (trim >> no_space)
             tmp.append(no_space + ' ');
         tmp.erase(tmp.size() - 1);
-        _buffer_cl_final = tmp;
+        if (after_space.empty())
+            _buffer_cl_final = tmp + after_space;
+        else
+            _buffer_cl_final = tmp + ' ' + after_space;
+        // std::cout << "after_spc : "<< after_space << std::endl;
     }
+        // std::cout<< "====> : |" << _buffer_cl_final << '|'<< std::endl;
 }
 
 void Clients::SetBoolOk(bool val) {
     __buff_ok_ = val;
+}
+
+void Clients::SetBoolKnow(bool val) {
+    __he_know_ = val;
+}
+
+void Clients::SetBoolBot(bool val) {
+    __bot_ = val;
 }
 
 void Clients::SetBoolPassword(bool val) {

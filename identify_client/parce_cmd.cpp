@@ -5,13 +5,14 @@ bool Server::parce_nick(std::string &part2) {
         return false;
     for (size_t i = 0; i < part2.length(); i++) {
         if ( !std::isalnum(part2[i]) && part2[i] != '[' && part2[i] != ']' && part2[i] != '{' \
-            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\' && part2[i] )
+            && part2[i] != '}' && part2[i] != '|' && part2[i] != '\\' && part2[i] != '_' )
                 return false;
     }
     return true;    
 }
 
-int Server::switch_aft(std::string cmd) {
+int Server::switch_aft(std::string cmd)
+{
     if(!std::strcmp(cmd.c_str(), "JOIN"))
         return 0;
     if(!std::strcmp(cmd.c_str(), "KICK"))

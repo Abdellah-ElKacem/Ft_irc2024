@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/03/31 03:25:15 by ael-kace         ###   ########.fr       */
+/*   Updated: 2024/05/01 17:44:31 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,17 +56,17 @@ bool ft_check_client(std::vector<std::string>& args)
 }
 
 
-void ft_extract_long_line(std::string& line, std::vector<std::string>& args)
+void ft_extract_long_line(std::string& line, std::vector<std::string>& args, size_t x)
 {
-	for (size_t i = 2; i < args.size(); i++)
+	for (size_t i = x; i < args.size(); i++)
 	{
 		for (size_t j = 0; j < args[i].length(); j++)
 		{
-			if (i == 2 && j == 0 && args[i][j] == ':')
+			if (i == x && j == 0 && args[i][j] == ':')
 				j++;
 			line.push_back(args[i][j]);
 		}
-		if (i < args.size())
+		if (i < args.size() - 1)
 			line.push_back(' ');
 	}
 }
@@ -75,7 +75,7 @@ void ft_extract_long_line(std::string& line, std::vector<std::string>& args)
 void ft_extract_message(std::string& message, std::vector<std::string>& args)
 {
 	if (args[2][0] == ':')
-		ft_extract_long_line(message, args);
+		ft_extract_long_line(message, args, 2);
 	else
 		message = args[2];
 }
@@ -87,12 +87,6 @@ void ft_remove_fromlist(std::vector<std::string>& list, std::string& name)
     if (it!= list.end())
         list.erase(it);
 }
-// bool ft_check_channel(channels& channel_it, std::string &channel_name)
-// {
-// 	if (channel_it->second._ch_name == channel_name)
-// 		return false;
-// 	return true;
-// }
 
 void ft_send_to_all(std::string msg, channels it)
 {
@@ -105,6 +99,8 @@ void ft_send_to_all(std::string msg, channels it)
 	}
 	
 }
+
+
 
 void ft_handle_topic(client& it, std::vector<std::string> &args)
 {
@@ -144,16 +140,15 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 			channel_it->second._topic_name = "";
 		else
 		{
-			// std::cout << args.size() << std::endl;
 			if (args.size() == 3 || args[2][0] != ':')
 				channel_it->second._topic_name = args[2];
 			else
 			{
-				ft_extract_long_line(long_line, args);
+				ft_extract_long_line(long_line, args, 2);
 				channel_it->second._topic_name = long_line;
-				// std::cout << long_line << std::endl;
 			}
 			ft_send_to_all(RPL_SETTOPIC(it->second.GetNickname() ,it->second.GetUsername(), it->second.GetIpClient() ,channel_it->second._ch_name, channel_it->second._topic_name), channel_it);
+			channel_it->second._topic_setter = it->second.GetNickname();
 		}
 	}
 	else
@@ -168,7 +163,7 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 {
 	channels channel_it;
 	std::vector<std::string>::iterator search_it;
-
+	std::string line;
 	if (args.size() <= 2)
 	{
 		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));
@@ -186,13 +181,23 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 			send_rep(it->second.GetFdClient(),ERR_NOSUCHNICK(it->second.GetIpClient(), args[2]));
 			return ;
 		}
-		if (args[3].length() == 1 && args[3][0] == ':')
+		if ((args.size() == 4 && args[3].length() == 1 && args[3][0] == ':') || args.size() == 3)
 			ft_send_to_all(RPL_KICK(it->second.GetNickname(), it->second.GetUsername(), it->second.GetIpClient(), channel_it->second._ch_name,  args[2], args[2]), channel_it);
-		else
+		else if (args.size() >= 4 && args[3][0] != ':')
 			ft_send_to_all(RPL_KICK(it->second.GetNickname(), it->second.GetUsername(), it->second.GetIpClient(), channel_it->second._ch_name,  args[2], args[3]), channel_it);
+		else
+		{
+			ft_extract_long_line(line, args, 3);
+			ft_send_to_all(RPL_KICK(it->second.GetNickname(), it->second.GetUsername(), it->second.GetIpClient(), channel_it->second._ch_name,  args[2], line), channel_it);
+		}
 		ft_remove_fromlist(channel_it->second._members_list, args[2]);
 		ft_remove_fromlist(channel_it->second._operetos_list, args[2]);
 		ft_remove_fromlist(channel_it->second._invited_list, args[2]);
+		if (channel_it->second._members_list.size() == 0)
+		{
+			_channel_list.erase(channel_it);
+			
+		}
 	}
 }
 
@@ -234,6 +239,7 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 	if (memeber == it_channels->second._members_list.end())
 	{
 		std::cerr << "Cannot send to channel (+n)" << std::endl;
+		send_rep(sender->second.GetFdClient(), ERR_CANNOTSENDTOCHAN(sender->second.GetIpClient(), sender->second.GetNickname(), it_channels->second._ch_name));
 		return ;
 	}
 
@@ -288,11 +294,6 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 
 void ft_handle_cmd(client& it, std::vector<std::string> &args)
 {
-	// for (size_t i = 0; i < args.size(); i++)
-	// {
-	// 	std::cout << args[i] << std::endl;
-	// }
-	
 	if (args[0] == "TOPIC")
 		ft_handle_topic(it ,args);
 	else if (args[0] == "KICK")
@@ -301,5 +302,4 @@ void ft_handle_cmd(client& it, std::vector<std::string> &args)
 		ft_handle_invite(it , args);
 	else if (args[0] == "PRIVMSG")
 		ft_handle_privmsg(it , args);
-	// std::cout << "----------------------------------------------------------------" << std::endl;
 }
