@@ -377,10 +377,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 't')
-                {
                     handl_t(it_ch);
-                    z++;
-                }
                 else if (modes[0][j] == 'l')
                 {
                     if (z <= args.size())
@@ -388,10 +385,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 'i')
-                {
                     handl_i(it_ch);
-                    z++;
-                }
                 else
                 {
                     send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));
@@ -429,10 +423,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 't')
-                {
                     handl_t_m(it_ch);
-                    z++;
-                }
                 else if (modes[0][j] == 'l')
                 {
                         handl_l_m(it_ch);
@@ -440,12 +431,8 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                             used_args.push_back('*');
                         st++;
                 }
-                else if (modes[0][j] == 'i')
-                {
-                    
+                else if (modes[0][j] == 'i')  
                     handl_i_m(it_ch);
-                    z++;
-                }
                 else
                 {
                     send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));
