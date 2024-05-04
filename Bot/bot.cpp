@@ -92,6 +92,7 @@ void    ft_send_info(std::string& username, std::string& cookie, int fd, std::st
     std::vector<std::string> lines;
 	std::string url = "https://profile.intra.42.fr/users/" + username;
     std::string cmd = "curl " + url + " -s -b _intra_42_session_production=" + cookie + " > result.txt";
+    std::cout << cmd << std::endl;
 	for (size_t i = 0; i < username.length(); i++)
 	{
 		if (!std::isalpha(username[i]) && username[i] != '-')

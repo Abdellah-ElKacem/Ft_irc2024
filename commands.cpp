@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/01 17:44:31 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/04 20:55:51 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,15 @@ bool ft_check_client(std::vector<std::string>& args)
 	return true;
 }
 
+
+bool ft_check_clients(std::string& name)
+{
+	std::map<std::string, Clients>::iterator it;
+	it = nick_clients.find(name);
+	if (it == nick_clients.end())
+		return false;
+	return true;
+}
 
 void ft_extract_long_line(std::string& line, std::vector<std::string>& args, size_t x)
 {
@@ -166,19 +175,21 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	std::string line;
 	if (args.size() <= 2)
 	{
-		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(it->second.GetIpClient(), it->second.GetNickname(), args[0]));
+		send_rep(it->second.GetFdClient(), ERR_NEEDMOREPARAMS(server_name, it->second.GetNickname(), args[0]));
 		return;
 	}
 	channel_it = _channel_list.find(args[1]);
 	if (channel_it == _channel_list.end())
-		send_rep(it->second.GetFdClient(),ERR_NOSUCHCHANNEL(it->second.GetIpClient(), it->second.GetNickname(), args[1]));
-	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
+		send_rep(it->second.GetFdClient(),ERR_NOSUCHCHANNEL(server_name, it->second.GetNickname(), args[1]));
+	else if (!ft_check_list(channel_it->second._members_list, it->second.GetNickname()))
 		send_rep(it->second.GetFdClient(), ERR_CHANOPRIVSNEEDED(server_name, it->second.GetNickname(), channel_it->second._ch_name));
+	else if (ft_check_clients(args[2]))
+		send_rep(it->second.GetFdClient(), ERR_USERNOTINCHANNEL(server_name, it->second.GetNickname(), args[2], channel_it->second._ch_name));
 	else
 	{
 		if (!ft_check_list(channel_it->second._members_list, args[2]))
 		{
-			send_rep(it->second.GetFdClient(),ERR_NOSUCHNICK(it->second.GetIpClient(), args[2]));
+			send_rep(it->second.GetFdClient(),ERR_NO_NICK_CHNL(server_name, args[2]));
 			return ;
 		}
 		if ((args.size() == 4 && args[3].length() == 1 && args[3][0] == ':') || args.size() == 3)
@@ -193,14 +204,11 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 		ft_remove_fromlist(channel_it->second._members_list, args[2]);
 		ft_remove_fromlist(channel_it->second._operetos_list, args[2]);
 		ft_remove_fromlist(channel_it->second._invited_list, args[2]);
+		channel_it->second._members_list1.erase(args[2]);
 		if (channel_it->second._members_list.size() == 0)
-		{
 			_channel_list.erase(channel_it);
-			
-		}
 	}
 }
-
 void	ft_handle_invite(client& it , std::vector<std::string> &args)
 {
 	channels channel_it;
@@ -211,22 +219,22 @@ void	ft_handle_invite(client& it , std::vector<std::string> &args)
 		return ;
 	}
 	channel_it = _channel_list.find(args[2]);
-	if (channel_it != _channel_list.end() && ft_check_list(channel_it->second._members_list, args[1]))
+	if (channel_it != _channel_list.end() && !ft_check_list(channel_it->second._members_list, it->second.GetNickname()))
 	    send_rep(it->second.GetFdClient(), ERR_NOTONCHANNEL(server_name , args[2]));
 	else if (!ft_check_client(args))
-		send_rep(it->second.GetFdClient(),ERR_NOSUCHNICK(it->second.GetIpClient(), args[1]));
+		send_rep(it->second.GetFdClient(),ERR_NOSUCHNICK(server_name, args[1]));
 	else if (channel_it == _channel_list.end())
 	    send_rep(it->second.GetFdClient(), ERR_NOSUCHCHANNEL(server_name , it->second.GetNickname(), args[2]));
-		
+	else if (ft_check_list(channel_it->second._members_list, args[1]))
+	    send_rep(it->second.GetFdClient(), ERR_USERONCHANNEL(server_name , it->second.GetNickname(), args[1], channel_it->second._ch_name));
 	else
 	{
-		channel_it->second._invited_list.push_back(args[1]);
+		if (!ft_check_list(channel_it->second._invited_list, args[1]))
+			channel_it->second._invited_list.push_back(args[1]);
 		sender = nick_clients.find(args[1]);
-		send_rep(it->second.GetFdClient(), RPL_INVITING(server_name , it->second.GetNickname(), args[1], args[2]));
-		send_rep(sender->second.GetFdClient(), RPL_INVITE(it->second.GetNickname(), sender->second.GetIpClient(), args[1], args[1], args[2]));
+		send_rep(it->second.GetFdClient(), RPL_INVITING(server_name, it->second.GetNickname(), args[1], args[2]));
+		send_rep(sender->second.GetFdClient(), RPL_INVITE(it->second.GetNickname(), it->second.GetUsername(), sender->second.GetIpClient(), args[1], args[2]));
 	}
-    // else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
-    //     std::cerr << "You don't have enough channel privileges" << std::endl;
 }
 
 
@@ -265,7 +273,7 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 		send_rep(sender->second.GetFdClient(), ERR_NORECIPIENT(server_name, sender->second.GetNickname(), args[0]) );
         return ;
 	}
-	else if (args.size() == 2)
+	else if (args.size() == 2 || (args.size() == 3 && args[2] == ":") )
 	{
         send_rep(sender->second.GetFdClient(), ERR_NOTEXTTOSEND(server_name, sender->second.GetNickname()));
         return ;
@@ -278,10 +286,7 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 		it_channels = _channel_list.find(senders[i]);
 		
 		if (it_channels == _channel_list.end() &&  it_clients == nick_clients.end())
-		{
 			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i]));
-			return ;
-		}
 		else
 		{
 			if (senders[i][0] == '#')
