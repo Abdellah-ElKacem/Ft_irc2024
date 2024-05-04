@@ -60,9 +60,7 @@ class Clients
         bool GetBoolKnow() const;
         bool GetBoolBot() const;
 
-        void check_new_line();
+        int check_new_line();
         void trim_string();
 
 };
-
-// void bot(std::map<int ,Clients>::iterator it);

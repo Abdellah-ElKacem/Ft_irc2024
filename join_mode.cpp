@@ -1,6 +1,9 @@
 #include "channel.hpp"
 
 std::string name_srv = "ircserv_KAI.chat";
+std::string used_modes;
+std::string used_args;
+
 channel::channel()
 {}
 
@@ -124,7 +127,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         {
             if (it->second._members_list.size() >= it->second._limit_nb)
             {
-                send_rep(it_c->first, ERR_CHANNELISFULL(it_c->second.GetNickname(), it->first));
+                send_rep(it_c->first, ERR_CHANNELISFULL(name_srv, it_c->second.GetNickname(), it->first));
                 return ;
             }
         }
@@ -158,9 +161,20 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         it->second._members_list.push_back(it_c->second.GetNickname());
         it->second._members_list1[it_c->second.GetNickname()] = it_c->second.GetFdClient();
         it->second._limit_nb++;
-        ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
-        send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
-        send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        if (it->second._topic_name.empty())
+        {
+            ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
+            send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        }
+        else
+        {
+            ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
+            send_rep(it_c->first, RPL_TOPICDISPLAY(name_srv, it_c->second.GetNickname(), it->first, it->second._topic_name));
+            // send_rep(it_c->first, RPL_TOPICWHOTIME(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
+            send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
+        }
     }
 }
 
@@ -170,7 +184,6 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
     std::vector<std::string>::iterator name_find;
     std::string buffer = "";
 
-    // std::time_t time = std::time(NULL);
     std::string time = "0";
     
 
@@ -197,7 +210,6 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
     else
         send_rep(it_c->first, ERR_NOSUCHCHANNEL(name_srv, it_c->second.GetNickname(), channel_mane));
 }
-
 
 // ------------------------------------------------------------------------------------//
 // ------------------------------------ modes -----------------------------------------//
@@ -244,7 +256,7 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg, 
 //------- (l) ---------//
 void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg, std::map<int ,Clients>::iterator it_c)
 {
-    if (it_ch->second._limit_members == true)
+    if (it_ch->second._limit_members == false)
     {
         it_ch->second._limit_members = true;
         it_ch->second._limit_nb = std::atoi(arg.c_str());
@@ -254,17 +266,17 @@ void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg, st
 
 void handl_l_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
 {
-    if (it_ch->second._limit_members == false)
+    if (it_ch->second._limit_members == true)
     {
-        it_ch->second._is_locked = false;
-        ft_send_to_all(RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-k", it_c->second.GetUsername()), it_ch);
+        it_ch->second._limit_members = false;
+        ft_send_to_all(RPL_DELMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "-l", it_c->second.GetUsername()), it_ch);
     }
 }
 
 //------- (i) ---------//
 void handl_i(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
 {
-    if (it_ch->second._is_invited != true)
+    if (it_ch->second._is_invited == false)
     {
         it_ch->second._is_invited = true;
         ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+i", it_c->second.GetUsername()), it_ch);
@@ -283,7 +295,7 @@ void handl_i_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Cli
 //------- (t) ---------//
 void handl_t(std::map<std::string, channel>::iterator it_ch, std::map<int ,Clients>::iterator it_c)
 {
-    if (it_ch->second._is_topiced != true)
+    if (it_ch->second._is_topiced == false)
     {
         it_ch->second._is_topiced = true;
         ft_send_to_all(RPL_ADDMODET(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+t", it_c->second.GetUsername()), it_ch);
@@ -299,9 +311,9 @@ void handl_t_m(std::map<std::string, channel>::iterator it_ch, std::map<int ,Cli
     }
 }
 
-// ------------------------------------------------------------------------------------//
-// -------------------------------- main modes func -----------------------------------//
-// ------------------------------------------------------------------------------------//
+// ------------------------------------------------------------------------------------// 
+// -------------------------------- main modes func -----------------------------------// 
+// ------------------------------------------------------------------------------------// 
 
 void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c)
 {
@@ -310,7 +322,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
     std::vector<std::string> args;
     std::map<std::string, channel>::iterator it_ch;
     std::vector<std::string>::iterator it_op;
-    int sign = 0;
+    // int sign = 0;
 
     size_t z = 0;
     it_ch = _channel_list.find(ch_name);
@@ -324,76 +336,108 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
         }
         for (size_t i = 2; i <= cmd.size() - 1; i++)
         {
-            if ((cmd[i][0] == '+' || cmd[i][0] == '-') && z == 0)
+            if (z == 0)
+            {
+                std::cout << "-- modes -->"<< cmd[i] << std::endl;
                 modes.push_back(cmd[i]);
+            }
             else
             {
-                if ((cmd[i][0] == '+' || cmd[i][0] == '-'))
-                    break;
+                std::cout << "-- args -->"<< cmd[i] << std::endl;
                 args.push_back(cmd[i]);
-                z = 1;
             }
+            z = 1;
         }
         z = 1;
-        for(size_t i = 0; i <= modes.size() - 1; i++)
+        if (modes[0][0] != '-')
         {
-            if (modes[i][0] == '-')
-                sign = 0;
-            else
-                sign = 1;
-            for(size_t j = 1; j <= modes[i].length() - 1; j++)
+            for(size_t j = 0; j <= modes[0].length() - 1; j++)
             {
-                if (modes[i][j] == 'k')
+                if (modes[0][j] == '+')
                 {
-                    if (sign)
-                    {
-                        if (z <= args.size())
-                            handl_k(it_ch, args[z - 1], it_c);
-                    }
-                    else
+                    j++;
+                    if (j >  modes[0].length())
+                        break;
+
+                }
+                if (modes[0][j] == 'k')
+                {
+                    if (z <= args.size())
+                        handl_k(it_ch, args[z - 1], it_c);
+                    z++;
+                }
+                else if (modes[0][j] == 'o')
+                {
+                    
+                    if (z <= args.size())
+                        handl_o(it_ch, args[z - 1], it_c);
+                    z++;
+                }
+                else if (modes[0][j] == 't')
+                {
+                    handl_t(it_ch, it_c);
+                    z++;
+                }
+                else if (modes[0][j] == 'l')
+                {
+                    if (z <= args.size())
+                        handl_l(it_ch, args[z - 1], it_c);
+                    z++;
+                }
+                else if (modes[0][j] == 'i')
+                {
+                    std::cout << "*-*--*-*-\n";
+                    handl_i(it_ch, it_c);
+                    z++;
+                }
+                else
+                    break;
+            }
+        }
+        else
+        {
+            for(size_t j = 0; j <= modes[0].length() - 1; j++)
+            {
+                if (modes[0][j] == '-')
+                {
+                    j++;
+                    if (j >  modes[0].length())
+                        break;
+
+                }
+                if (modes[0][j] == 'k')
+                {
+                    std::cout << "-=-=-=-=-=-=-=\n";
+                    if (z <= args.size())
                         handl_k_m(it_ch, it_c);
                     z++;
                 }
-                if (modes[i][j] == 'o')
+                else if (modes[0][j] == 'o')
                 {
-                    if (sign)
-                    {
-                        if (z <= args.size())
-                            handl_o(it_ch, args[z - 1], it_c);
-                    }
-                    else
+                    
+                    if (z <= args.size())
                         handl_o_m(it_ch, args[z - 1], it_c);
                     z++;
                 }
-                if (modes[i][j] == 't')
+                else if (modes[0][j] == 't')
                 {
-                    if (sign)
-                        handl_t(it_ch, it_c);
-                    else
-                        handl_t_m(it_ch, it_c);
+                    handl_t_m(it_ch, it_c);
                     z++;
                 }
-                if (modes[i][j] == 'l')
+                else if (modes[0][j] == 'l')
                 {
-                    if (sign)
-                    {
-                        if (z <= args.size())
-                            handl_l(it_ch, args[z - 1], it_c);
-                    }
-                    else
+                    if (z <= args.size())
                         handl_l_m(it_ch, it_c);
                     z++;
                 }
-                if (modes[i][j] == 'i')
+                else if (modes[0][j] == 'i')
                 {
-                    if (sign)
-                    {
-                        handl_i(it_ch, it_c);
-                    }
-                    else
-                        handl_i_m(it_ch, it_c);
+                    
+                    handl_i_m(it_ch, it_c);
                     z++;
                 }
+                else
+                    break;
             }
         }
     }

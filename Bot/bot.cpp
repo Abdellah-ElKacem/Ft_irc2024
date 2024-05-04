@@ -91,6 +91,7 @@ void    ft_send_info(std::string& username, std::string& cookie, int fd, std::st
 	std::map<std::string , std::string> result;
     std::vector<std::string> lines;
 	std::string url = "https://profile.intra.42.fr/users/" + username;
+    std::cout << url << '\n';
     std::string cmd = "curl " + url + " -s -b _intra_42_session_production=" + cookie + " > result.txt";
 	for (size_t i = 0; i < username.length(); i++)
 	{
@@ -110,6 +111,7 @@ void    ft_send_info(std::string& username, std::string& cookie, int fd, std::st
 	}
 	else if (!cmd.find("<html>"))
 	{
+        std::cout <<"---> : {}"<< cmd << std::endl;
 		ft_send_msg("incorect cookie", nick , fd);
 		ok = 1;
 	}

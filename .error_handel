@@ -7,3 +7,5 @@
     +i
     +t
 --> check the nickname if he changed : (change it after reset a new one)
+--> add rep for join
+--> err ---> mode #d +kkkk 123 456 789 455

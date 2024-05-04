@@ -127,7 +127,7 @@ void Server::init__and_run()
         exit(EXIT_FAILURE);
     } if (setsockopt(_server_sock, SOL_SOCKET, SO_NOSIGPIPE, &ok, sizeof(int)) < 0) {
         close (_server_sock);
-        std::perror("setsockopt(SO_REUSEADDR) failed");
+        std::perror("setsockopt(SO_NOSIGPIPE) failed");
         exit(EXIT_FAILURE);
     } if (bind(_server_sock, (sockaddr*)&__serv_addr, sizeof(__serv_addr)) == -1) {
         close (_server_sock);
@@ -171,7 +171,7 @@ void Server::init__and_run()
                         it = map_of_clients.find(_fds[i].fd);
                         std::string msg = ":ircserv_KAI.chat 417 " + it->second.GetNickname() + " :Input line was too long\r\n";
                         msg_client(_fds[i].fd,msg);
-                        continue;
+                        break;
                     } if (recvv == 0 || _buffer.substr(0, 4) == "QUIT") {
                         delete_client_for_all(i);
                         std::cout << "client disconnected\n";
@@ -190,9 +190,9 @@ void Server::init__and_run()
                             break;
                         }
                         while (!it->second.GetBuffer_tmp().empty()) {
-                            it->second.check_new_line();
+                            if(it->second.check_new_line())
+                                break;
                             it->second.trim_string();
-                            // std::cout << '['<< it->second.GetBuffer()<< "] " << it->first << std::endl;
                             if (it->second.GetBoolNewline() == true) {
                                 if (it->second.GetBoolIdentify() == false)
                                     register_client(it->second, str_y, str_m, str_d, str_h, str_mi, str_s);
@@ -203,19 +203,7 @@ void Server::init__and_run()
                             }
                         if (it->second.GetBoolNewline() == true)
                             it->second.Buff_clear();
-                        // std::cout  << std::boolalpha << it->second.GetBoolPassword()<< " | " << it->second.GetBoolIdentify()<< std::endl;
                         }
-                        // std::cout << "---------------------------------------------------" << std::endl;
-                        // std::map<int, Clients>::iterator check_client;
-                        // std::map<std::string, Clients>::iterator check_nick_client;
-                        // for (check_client = map_of_clients.begin(); check_client != map_of_clients.end(); check_client++) {
-                        //     std::cout << "the fd is : | " << check_client->first << " | and the nickname  is : | " << check_client->second.GetNickname() << std::endl;
-                        // }
-                        // std::cout << std::endl;
-                        // for (check_nick_client = nick_clients.begin(); check_nick_client != nick_clients.end(); check_nick_client++) {
-                        //     std::cout << "the nick is : | " << check_nick_client->first << " | and the fd is : | " << check_nick_client->second.GetFdClient() << std::endl;
-                        // }
-                        // std::cout << "---------------------------------------------------" << std::endl;
                     }
                 }
             }

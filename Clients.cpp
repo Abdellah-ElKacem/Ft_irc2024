@@ -90,7 +90,7 @@ bool Clients::GetBoolBot() const {
     return __bot_;
 }
 
-void Clients::check_new_line() {
+int Clients::check_new_line() {
 
     size_t idx = _buffer_cl.find('\n');
 
@@ -99,7 +99,7 @@ void Clients::check_new_line() {
         if (_buffer_cl_final.size() > 512) {
             std::string msg = ":ircserv_KAI.chat 417 " + GetNickname() + " :Input line was too long\r\n";
             send_rep(GetFdClient(), msg);
-            return;
+            return 1;
         }
         _buffer_cl = _buffer_cl.substr(idx + 1);
         SetBoolNewline(true);
@@ -107,9 +107,15 @@ void Clients::check_new_line() {
         _buffer_cl_final.append(_buffer_cl);
         _buffer_cl.clear();
         SetBoolNewline(false);
+        if (_buffer_cl_final.size() > 512) {
+            std::string msg = ":ircserv_KAI.chat 417 " + GetNickname() + " :Input line was too long\r\n";
+            send_rep(GetFdClient(), msg);
+            return 1;
+        }
     }
     if (_buffer_cl_final.back() == '\r')
         _buffer_cl_final.pop_back();
+    return 0;
 }
 
 void Clients::trim_string() {
