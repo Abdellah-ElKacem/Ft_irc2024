@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/04 20:55:51 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/05 16:43:03 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ bool ft_check_client(std::vector<std::string>& args)
 }
 
 
-bool ft_check_clients(std::string& name)
+bool ft_check_clients(std::string name)
 {
 	std::map<std::string, Clients>::iterator it;
 	it = nick_clients.find(name);
@@ -181,13 +181,15 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	channel_it = _channel_list.find(args[1]);
 	if (channel_it == _channel_list.end())
 		send_rep(it->second.GetFdClient(),ERR_NOSUCHCHANNEL(server_name, it->second.GetNickname(), args[1]));
-	else if (!ft_check_list(channel_it->second._members_list, it->second.GetNickname()))
-		send_rep(it->second.GetFdClient(), ERR_CHANOPRIVSNEEDED(server_name, it->second.GetNickname(), channel_it->second._ch_name));
-	else if (ft_check_clients(args[2]))
+	else if (!ft_check_list(channel_it->second._members_list, args[2]) && ft_check_clients(args[2]))
 		send_rep(it->second.GetFdClient(), ERR_USERNOTINCHANNEL(server_name, it->second.GetNickname(), args[2], channel_it->second._ch_name));
+	else if (!ft_check_list(channel_it->second._members_list, it->second.GetNickname()) && ft_check_clients(it->second.GetNickname()))
+		send_rep(it->second.GetFdClient(), ERR_NOTONCHANNEL(server_name, channel_it->second._ch_name));
+	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
+		send_rep(it->second.GetFdClient(), ERR_CHANOPRIVSNEEDED(server_name, it->second.GetNickname(), channel_it->second._ch_name));
 	else
 	{
-		if (!ft_check_list(channel_it->second._members_list, args[2]))
+		if (!ft_check_clients(args[2]))
 		{
 			send_rep(it->second.GetFdClient(),ERR_NO_NICK_CHNL(server_name, args[2]));
 			return ;
@@ -227,6 +229,8 @@ void	ft_handle_invite(client& it , std::vector<std::string> &args)
 	    send_rep(it->second.GetFdClient(), ERR_NOSUCHCHANNEL(server_name , it->second.GetNickname(), args[2]));
 	else if (ft_check_list(channel_it->second._members_list, args[1]))
 	    send_rep(it->second.GetFdClient(), ERR_USERONCHANNEL(server_name , it->second.GetNickname(), args[1], channel_it->second._ch_name));
+	else if (!ft_check_list(channel_it->second._operetos_list, it->second.GetNickname()))
+		send_rep(it->second.GetFdClient(), ERR_CHANOPRIVSNEEDED(server_name, it->second.GetNickname(), channel_it->second._ch_name));
 	else
 	{
 		if (!ft_check_list(channel_it->second._invited_list, args[1]))

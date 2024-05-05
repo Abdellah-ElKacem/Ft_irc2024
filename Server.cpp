@@ -87,6 +87,11 @@ void Server::delete_client_for_all(int i) {
     for (it2 = _channel_list.begin(); it2 != _channel_list.end(); it2++) {
         it_nick = std::find(it2->second._members_list.begin(), it2->second._members_list.end(), nick_);
         if (it_nick != it2->second._members_list.end()) {
+            if (it2->second._members_list.size() == 1)
+            {
+                _channel_list.erase(it2);
+                return ;
+            }
             it2->second._members_list.erase(it_nick);
         }
         it_nick = std::find(it2->second._invited_list.begin(), it2->second._invited_list.end(), nick_);
