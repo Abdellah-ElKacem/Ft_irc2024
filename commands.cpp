@@ -6,7 +6,7 @@
 /*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/05 16:43:03 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/06 12:47:47 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ bool ft_check_clients(std::string name)
 
 void ft_extract_long_line(std::string& line, std::vector<std::string>& args, size_t x)
 {
+	std::cout << args[x] << std::endl;
 	for (size_t i = x; i < args.size(); i++)
 	{
 		for (size_t j = 0; j < args[i].length(); j++)
@@ -75,7 +76,7 @@ void ft_extract_long_line(std::string& line, std::vector<std::string>& args, siz
 				j++;
 			line.push_back(args[i][j]);
 		}
-		if (i < args.size() - 1)
+		if (i != x && i < args.size() - 1)
 			line.push_back(' ');
 	}
 }
@@ -149,7 +150,7 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 			channel_it->second._topic_name = "";
 		else
 		{
-			if (args.size() == 3 || args[2][0] != ':')
+			if (args[2][0] != ':')
 				channel_it->second._topic_name = args[2];
 			else
 			{
