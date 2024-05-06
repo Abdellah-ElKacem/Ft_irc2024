@@ -14,7 +14,6 @@ Clients::Clients(int fd, std::string ip_client) {
     __identify_ = false;
     __newline_ = false;
     __he_know_ = false;
-    __bot_ = false;
 }
 
 std::string Clients::GetNickname() const {
@@ -86,10 +85,6 @@ bool Clients::GetBoolKnow() const {
     return __he_know_;
 }
 
-bool Clients::GetBoolBot() const {
-    return __bot_;
-}
-
 int Clients::check_new_line() {
 
     size_t idx = _buffer_cl.find('\n');
@@ -113,8 +108,8 @@ int Clients::check_new_line() {
             return 1;
         }
     }
-    if (_buffer_cl_final.back() == '\r')
-        _buffer_cl_final.pop_back();
+    if (_buffer_cl_final.at(_buffer_cl_final.length() - 1) == '\r')
+        _buffer_cl_final.erase(_buffer_cl_final.begin() + _buffer_cl_final.size() - 1);
     return 0;
 }
 
@@ -135,9 +130,7 @@ void Clients::trim_string() {
             _buffer_cl_final = tmp + after_space;
         else
             _buffer_cl_final = tmp + ' ' + after_space;
-        // std::cout << "after_spc : "<< after_space << std::endl;
     }
-        // std::cout<< "====> : |" << _buffer_cl_final << '|'<< std::endl;
 }
 
 void Clients::SetBoolOk(bool val) {
@@ -148,9 +141,6 @@ void Clients::SetBoolKnow(bool val) {
     __he_know_ = val;
 }
 
-void Clients::SetBoolBot(bool val) {
-    __bot_ = val;
-}
 
 void Clients::SetBoolPassword(bool val) {
     __Password_ = val;

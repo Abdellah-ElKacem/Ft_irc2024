@@ -48,17 +48,6 @@ void    ft_split_command(std::string& command, std::vector<std::string>& args)
         args.push_back(temp);
 }
 
-void Server::bot(Clients &it) {
-	int fd_bot = socket(AF_INET, SOCK_STREAM, 0);
-	__clients.sin_family = AF_INET;
-    __clients.sin_port = htons(_port);
-    __clients.sin_addr.s_addr = INADDR_ANY;
-	std::cout << fd_bot << std::endl;
-	connect(fd_bot, (struct sockaddr*)&__clients, sizeof(__clients));
-	it.SetBoolBot(true);
-	_bot_fd = fd_bot;
-}
-
 void check_cmd(std::map<int ,Clients>::iterator it)
 {
     std::vector<std::string> args;

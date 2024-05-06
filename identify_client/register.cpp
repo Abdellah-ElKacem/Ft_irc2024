@@ -41,8 +41,8 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
             } if ( part1 == "NICK" ) {
                 if (client.GetBuffer().find(" ") != client.GetBuffer().npos) {
                     part2 = client.GetBuffer().substr(client.GetBuffer().find(" ") + 1);
-                    if (part2.back() == ':')
-                        part2.pop_back();
+                    if (part2.at(part2.length() - 1) == ':')
+                        part2.erase(part2.size() - 1);
                     if(!parce_nick(part2)) {
                         msg = ":ircserv_KAI.chat 432 " + client.GetNickname() + " NICK :Erroneus nickname\r\n";
                         msg_client(client.GetFdClient(),msg);
@@ -105,7 +105,6 @@ void Server::register_client(Clients& client ,std::string &str_m ,std::string &s
 
                 client.SetBoolIdentify(true);
                 nick_clients.insert(std::make_pair(client.GetNickname(), client));
-                                            // std::cout << "------> " << client.GetNickname() << " | " << client.GetFdClient() << " | "<< client.GetUsername() << std::endl;
             }
         }
     }

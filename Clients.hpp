@@ -21,7 +21,6 @@ class Clients
         bool    __newline_;
         bool    __buff_ok_;
         bool    __he_know_;
-        bool    __bot_;
 
     public:
         Clients(){}
@@ -49,7 +48,6 @@ class Clients
         void SetBoolNewline(bool);
         void SetBoolOk(bool);
         void SetBoolKnow(bool);
-        void SetBoolBot(bool);
 
         bool GetBoolPassword() const;
         bool GetBoolNickname() const;
@@ -58,7 +56,6 @@ class Clients
         bool GetBoolNewline() const;
         bool GetBoolOk() const;
         bool GetBoolKnow() const;
-        bool GetBoolBot() const;
 
         int check_new_line();
         void trim_string();
