@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/07 00:04:01 by ael-kace         ###   ########.fr       */
+/*   Updated: 2024/05/07 22:44:25 by aen-naas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 bool ft_check_list(std::vector<std::string>& vec, std::string name)
 {
-	std::vector<std::string>::iterator it2 = std::find(vec.begin(), vec.end(), name);
+	vector_it it2 = std::find(vec.begin(), vec.end(), name);
 
 	if (it2 != vec.end())
 		return true;
@@ -92,7 +92,7 @@ void ft_extract_message(std::string& message, std::vector<std::string>& args)
 
 void ft_remove_fromlist(std::vector<std::string>& list, std::string& name)
 {
-	std::vector<std::string>::iterator it = std::find(list.begin(), list.end(), name);
+	vector_it it = std::find(list.begin(), list.end(), name);
 
     if (it!= list.end())
         list.erase(it);
@@ -172,7 +172,7 @@ void ft_handle_topic(client& it, std::vector<std::string> &args)
 void	ft_handle_kick(client& it , std::vector<std::string> &args)
 {
 	channels channel_it;
-	std::vector<std::string>::iterator search_it;
+	vector_it search_it;
 	std::string line;
 	if (args.size() <= 2)
 	{
@@ -192,7 +192,7 @@ void	ft_handle_kick(client& it , std::vector<std::string> &args)
 	{
 		if (!ft_check_clients(args[2]))
 		{
-			send_rep(it->second.GetFdClient(),ERR_NO_NICK_CHNL(server_name, args[2]));
+			send_rep(it->second.GetFdClient(),ERR_NO_NICK_CHNL(server_name, it->second.GetNickname(), args[2]));
 			return ;
 		}
 		if ((args.size() == 4 && args[3].length() == 1 && args[3][0] == ':') || args.size() == 3)
@@ -251,8 +251,7 @@ void	msg_chennel(channels& it_channels, std::string& msg, client&  sender)
 	std::map<std::string, Clients>::iterator recivers_fd;
 	if (memeber == it_channels->second._members_list.end())
 	{
-		std::cerr << "Cannot send to channel (+n)" << std::endl;
-		send_rep(sender->second.GetFdClient(), ERR_CANNOTSENDTOCHAN(sender->second.GetIpClient(), sender->second.GetNickname(), it_channels->second._ch_name));
+		send_rep(sender->second.GetFdClient(), ERR_CANNOTSENDTOCHAN(server_name, sender->second.GetNickname(), it_channels->second._ch_name));
 		return ;
 	}
 
@@ -291,7 +290,7 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 		it_channels = _channel_list.find(senders[i]);
 		
 		if (it_channels == _channel_list.end() &&  it_clients == nick_clients.end())
-			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i]));
+			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i], args[2]));
 		else
 		{
 			if (senders[i][0] == '#')

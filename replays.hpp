@@ -107,7 +107,7 @@
 #define RPL_KICK(kicker, username, host, channel, targetuser, reason) ":" + kicker + "!" + username + "@" + host + " KICK " + channel + " " + targetuser + " :" + reason + "\r\n"
 
 #define PRIVMSG_FORMAT(senderNick, senderUsername, senderHostname, receiver, message) ":" + senderNick + "!~" + senderUsername + "@" + senderHostname + " PRIVMSG " + receiver + " :" + message + "\r\n"
-#define ERR_NO_NICK_CHNL(hostname, nick) ":" + hostname + " 401 " + nick + " "  + " :No such nick/channel\r\n"
+#define ERR_NO_NICK_CHNL(hostname, nick, args) ":" + hostname + " 401 " + nick + " " + args + " :No such nick/channel\r\n"
 #define ERR_NORECIPIENT(hostname, nick ,cmd)  ":" + hostname  + " 411 " + nick + " :No recipient given (" + cmd + ")\r\n"
 #define ERR_NOTEXTTOSEND(hostname, nick)  ":" + hostname  + " 412 " + nick + " :No text to send\r\n"
 
