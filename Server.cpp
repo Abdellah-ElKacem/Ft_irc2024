@@ -14,7 +14,7 @@ Server::Server(const std::string port, const std::string password)
         }
     }
     _port = std::atol(port.c_str());
-    if (_port == 0 || _port > 9999) {
+    if (_port <= 0 || (_port > 65535 && port.size() < 6)) {
         std::cerr << "Error: Invalid port :/" << std::endl;
         exit (EXIT_FAILURE);
     }
