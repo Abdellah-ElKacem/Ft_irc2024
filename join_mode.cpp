@@ -265,6 +265,11 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg)
 //------- (l) ---------//
 void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg)
 {
+    for (size_t i = 0; i < arg.size(); i++)
+    {
+        if (arg[i] < '0' || arg[i] > '9')
+            return ;
+    }
     if (std::atoi(arg.c_str()) <= 0)
         return ;
     it_ch->second._limit_members = true;
