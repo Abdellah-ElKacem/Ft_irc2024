@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aen-naas <aen-naas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-kace <ael-kace@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 17:20:03 by aen-naas          #+#    #+#             */
-/*   Updated: 2024/05/07 22:44:25 by aen-naas         ###   ########.fr       */
+/*   Updated: 2024/05/08 15:59:10 by ael-kace         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,6 @@ bool ft_check_clients(std::string name)
 
 void ft_extract_long_line(std::string& line, std::vector<std::string>& args, size_t x)
 {
-	std::cout << args[x] << std::endl;
 	for (size_t i = x; i < args.size(); i++)
 	{
 		for (size_t j = 0; j < args[i].length(); j++)

@@ -172,7 +172,7 @@ void join_user_to_channel(std::map<int ,Clients>::iterator it_c, std::map<std::s
         {
             ft_send_to_all(RPL_JOIN(it_c->second.GetNickname(), it_c->second.GetUsername(), it->first ,it_c->second.GetIpClient()), it);
             send_rep(it_c->first, RPL_TOPICDISPLAY(name_srv, it_c->second.GetNickname(), it->first, it->second._topic_name));
-            send_rep(it_c->first, RPL_TOPICWHOTIME(it->second._topic_setter ,"0", it_c->second.GetNickname(),name_srv, it->first));
+            send_rep(it_c->first, RPL_TOPICWHOTIME(it->second._topic_setter, it_c->second.GetNickname(),name_srv, it->first));
             send_rep(it_c->first, RPL_NAMREPLY(name_srv, get_all(it), it->first, it_c->second.GetNickname()));
             send_rep(it_c->first, RPL_ENDOFNAMES(name_srv, it_c->second.GetNickname(), it->first));
         }
@@ -184,10 +184,7 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
     std::map<std::string, channel>::iterator it_find = _channel_list.find(channel_mane);
     std::vector<std::string>::iterator name_find;
     std::string buffer = "";
-
-    std::string time = "0";
     
-
     if (it_find != _channel_list.end())
     {
         name_find = std::find(it_find->second._members_list.begin(), it_find->second._members_list.end(), it_c->second.GetNickname());
@@ -203,7 +200,7 @@ void show_modes(std::map<int ,Clients>::iterator it_c, std::map<std::string, cha
             if (it_find->second._limit_members)
                 buffer.push_back('l');
             send_rep(it_c->first, RPL_CHANNELMODEIS(name_srv, it_c->second.GetNickname(), it_find->first, buffer));
-            send_rep(it_c->first, RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname(), time));
+            send_rep(it_c->first, RPL_CREATIONTIME(name_srv, it_find->first, it_c->second.GetNickname()));
         }
         else
             send_rep(it_c->first, ERR_NOTONCHANNEL(name_srv, channel_mane));
@@ -240,11 +237,17 @@ void handl_o(std::map<std::string, channel>::iterator it_ch, std::string arg, st
     std::vector<std::string>::iterator find_it = std::find(it_ch->second._members_list.begin(), it_ch->second._members_list.end(), arg);
     std::map<std::string, Clients>::iterator it_clients;
     if (find_it != it_ch->second._members_list.end())
+    {
         it_ch->second._operetos_list.push_back(*find_it);
-
-    it_clients = nick_clients.find(arg);
-    if (it_clients != nick_clients.end())
-        send_rep(it_clients->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
+        it_clients = nick_clients.find(arg);
+        if (it_clients != nick_clients.end())
+            send_rep(it_clients->second.GetFdClient(), RPL_ADDMODE(it_c->second.GetIpClient(), it_c->second.GetNickname(), it_ch->first, "+o", arg, it_c->second.GetUsername()));
+    }
+    else
+    {
+        send_rep(it_c->first, ERR_NO_NICK_CHNL(name_srv, it_c->second.GetNickname(), arg));
+        return ;
+    }
     used_modes.push_back('o');
     for(size_t i = 0; i < arg.size(); i++) 
         used_args.push_back(arg[i]);
@@ -262,15 +265,14 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg)
 //------- (l) ---------//
 void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg)
 {
-    if (it_ch->second._limit_members == false)
-    {
-        it_ch->second._limit_members = true;
-        it_ch->second._limit_nb = std::atoi(arg.c_str());
-        used_modes.push_back('l');
-        for(size_t i = 0; i < arg.size(); i++)
-            used_args.push_back(arg[i]);
-        used_args.push_back(' ');
-    }
+    if (std::atoi(arg.c_str()) <= 0)
+        return ;
+    it_ch->second._limit_members = true;
+    it_ch->second._limit_nb = std::atoi(arg.c_str());
+    used_modes.push_back('l');
+    for(size_t i = 0; i < arg.size(); i++)
+        used_args.push_back(arg[i]);
+    used_args.push_back(' ');
 }
 
 void handl_l_m(std::map<std::string, channel>::iterator it_ch)
@@ -377,10 +379,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 't')
-                {
                     handl_t(it_ch);
-                    z++;
-                }
                 else if (modes[0][j] == 'l')
                 {
                     if (z <= args.size())
@@ -388,10 +387,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 'i')
-                {
                     handl_i(it_ch);
-                    z++;
-                }
                 else
                 {
                     send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));
@@ -429,10 +425,7 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     z++;
                 }
                 else if (modes[0][j] == 't')
-                {
                     handl_t_m(it_ch);
-                    z++;
-                }
                 else if (modes[0][j] == 'l')
                 {
                         handl_l_m(it_ch);
@@ -440,12 +433,8 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                             used_args.push_back('*');
                         st++;
                 }
-                else if (modes[0][j] == 'i')
-                {
-                    
+                else if (modes[0][j] == 'i')  
                     handl_i_m(it_ch);
-                    z++;
-                }
                 else
                 {
                     send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));

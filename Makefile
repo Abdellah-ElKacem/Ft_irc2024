@@ -9,7 +9,7 @@ SRC = main.cpp Server.cpp Clients.cpp identify_client/authenticate.cpp identify_
 	identify_client/parce_cmd.cpp messages.cpp channel.cpp commands.cpp join_mode.cpp
 OBJ = $(SRC:.cpp=.o)
 
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 #-g -fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
 
 CPP = c++
 

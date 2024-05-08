@@ -141,7 +141,6 @@ void Clients::SetBoolKnow(bool val) {
     __he_know_ = val;
 }
 
-
 void Clients::SetBoolPassword(bool val) {
     __Password_ = val;
 }

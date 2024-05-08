@@ -14,7 +14,7 @@ Server::Server(const std::string port, const std::string password)
         }
     }
     _port = std::atol(port.c_str());
-    if (_port <= 0 || (_port > 65535 && port.size() < 6)) {
+    if (_port <= 0 || _port > 65535 || port.size() > 6) {
         std::cerr << "Error: Invalid port :/" << std::endl;
         exit (EXIT_FAILURE);
     }
@@ -148,7 +148,6 @@ void Server::init__and_run()
     std::string str_y, str_m, str_d, str_h, str_mi, str_s;
     time_server(str_y, str_m, str_d, str_h, str_mi, str_s);
 
-    // non blocking
     fcntl(_server_sock, F_SETFL, O_NONBLOCK);
     const size_t Max_size_buff = 512;
     while(1)
@@ -162,7 +161,7 @@ void Server::init__and_run()
                 if (_fds[i].fd == _server_sock) {
                     while (1) {
                         if (accept_func())
-                            break;  
+                            break;
                     } continue;
                 } else {
                     char buff[1024];
