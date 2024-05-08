@@ -265,7 +265,7 @@ void handl_o_m(std::map<std::string, channel>::iterator it_ch, std::string arg)
 //------- (l) ---------//
 void handl_l(std::map<std::string, channel>::iterator it_ch, std::string arg)
 {
-    if (std::atoi(arg.c_str()) == 0)
+    if (std::atoi(arg.c_str()) <= 0)
         return ;
     it_ch->second._limit_members = true;
     it_ch->second._limit_nb = std::atoi(arg.c_str());
@@ -326,6 +326,56 @@ void handl_t_m(std::map<std::string, channel>::iterator it_ch)
 // -------------------------------- main modes func -----------------------------------// 
 // ------------------------------------------------------------------------------------// 
 
+int check_args_mss(std::vector<std::string> modes, std::vector<std::string> args, std::map<int ,Clients>::iterator it_c)
+{
+    unsigned int z = 1;
+    if (modes[0][0] != '-')
+    {
+        for(size_t j = 0; j <= modes[0].length() - 1; j++)
+        {
+            if (modes[0][j] == '+')
+            {
+                j++;
+                if (j >  modes[0].length())
+                    break;
+            }
+            if (modes[0][j] == 'k')
+            {
+                if (z > args.size())
+                {
+                    send_rep(it_c->first, ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, "MODE"));
+                    return 1;
+                }
+                z++;
+            }
+            else if (modes[0][j] == 'o')
+            {
+                if (z > args.size())
+                {
+                    send_rep(it_c->first, ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, "MODE"));
+                    return 1;
+                }
+                z++;
+            }
+            else if (modes[0][j] == 'l')
+            {
+                if (z > args.size())
+                {
+                    send_rep(it_c->first, ERR_NEEDMOREPARAMS(it_c->second.GetNickname(), name_srv, "MODE"));
+                    return 1;
+                }
+                z++;
+            }
+            else if (modes[0][j] != '-' && modes[0][j] != 'i' && modes[0][j] != 't')
+            {
+                send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& _channel_list, std::map<int ,Clients>::iterator it_c)
 {
     std::string ch_name = cmd[1];
@@ -353,6 +403,8 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                 args.push_back(cmd[i]);
             z = 1;
         }
+        if (check_args_mss(modes, args, it_c) == 1)
+            return ;
         z = 1;
         if (modes[0][0] != '-')
         {
@@ -363,7 +415,6 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                     j++;
                     if (j >  modes[0].length())
                         break;
-
                 }
                 if (modes[0][j] == 'k')
                 {
@@ -373,7 +424,6 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                 }
                 else if (modes[0][j] == 'o')
                 {
-                    
                     if (z <= args.size())
                         handl_o(it_ch, args[z - 1], it_c);
                     z++;
@@ -388,11 +438,6 @@ void change_modes(std::vector<std::string> cmd, std::map<std::string, channel>& 
                 }
                 else if (modes[0][j] == 'i')
                     handl_i(it_ch);
-                else
-                {
-                    send_rep(it_c->first, ERR_UNKNOWNMODE(server_name, it_c->second.GetNickname(), modes[0][j]));
-                    break;
-                }
             }
             if (used_modes.size() > 1)
             {

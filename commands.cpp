@@ -279,7 +279,7 @@ void ft_handle_privmsg(client&  sender, std::vector<std::string> &args)
 		
 		if (it_channels == _channel_list.end() &&  it_clients == nick_clients.end())
 		{
-			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i]));
+			send_rep(sender->second.GetFdClient(), ERR_NO_NICK_CHNL(server_name, senders[i], "asd"));
 			return ;
 		}
 		else
